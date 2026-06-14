@@ -12,6 +12,10 @@ Full template scene generation with reactive rebuild. Operates from the 3D Viewp
 
 Same feature set as HiFive, targeting Blender's EEVEE_NEXT engine. Provides the same workflow for users on Blender 4.2–4.x.
 
+### CyclesX (Blender 3.0+)
+
+Targets Blender 3.0's CyclesX engine. Includes engine-specific Cryptomatte handling, holdout plane occlusion fixes, and dedicated Denoise options panel.
+
 ## Features
 
 - **Template Generation** — Camera, lighting, world HDRI, shadow/holdout planes, and compositor node tree configured per game
@@ -42,7 +46,7 @@ Clone the repository and copy the addon folder into Blender's addons directory:
 git clone https://github.com/zawaro/blender-cnc-toolkit.git
 ```
 
-Copy `hi_five/` (Blender 5.0+) or `eevee_next/` (Blender 4.2+) into your Blender addons directory:
+Copy `hi_five/` (Blender 5.0+), `eevee_next/` (Blender 4.2+), or `cyclesx/` (Blender 3.0+) into your Blender addons directory:
 
 - **Linux:** `~/.config/blender/<version>/scripts/addons/`
 - **macOS:** `~/Library/Application Support/Blender/<version>/scripts/addons/`
@@ -73,7 +77,7 @@ Build distribution zips with the included script:
 
 This will:
 1. Create a virtual environment if needed (via [uv](https://docs.astral.sh/uv/))
-2. Prompt you to select a toolkit (hi_five, eevee_next, or both)
+2. Prompt you to select a toolkit (hi_five, eevee_next, cyclesx, or all)
 3. Output versioned `.zip` files to `.dist/`
 
 ## License
