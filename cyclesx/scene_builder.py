@@ -34,14 +34,18 @@ class GameConfig:
   camera_location = (110.039, -110.039, 89.84670)
   camera_rotation = (1.0472, 0, 0.785398)
   camera_ortho_scale = 29.92
-  camera_clip_end = 2000.0
   camera_iso_location = (0, -31.96573, 26.8228)
   camera_iso_rotation = (0.872665, 0, 0)
   camera_iso_ortho_scale = 53.37
   sun_location = (-4.14, -10, 12.27)
   sun_rotation = (0.633555, 0.0726057, 5.79449)
-  sun_energy = 7.5
+  sun_energy = 6.5
   sun_angle = 0.00392699
+  sun_shadow_energy = 2.3
+  sun_shadow_cascade_count = 4
+  sun_shadow_cascade_fade = 0.0
+  sun_shadow_cascade_max_distance = 1000
+  sun_shadow_cascade_exponent = 1.0
   hdri = GENERIC_HDRI
   cycles_samples = 64
   cycles_adaptive_min_samples = 32
@@ -52,8 +56,28 @@ class GameConfig:
   colorramp_position02 = 0.722727
   colorramp_color01 = (0, 0, 1, 0)
   colorramp_color02 = (0, 0, 0.250158, 1)
-  sky_sun_elevation = 0.933751
-  sky_sun_rotation = 3.54302
+  # World config
+  world_color = (0, 0, 0)
+  world_mapping1_rot_z = -1.5708
+  world_mapping2_translate_z = 0.3
+  world_use_sky_texture = True
+  world_sky_sun_elevation = 0.933751
+  world_sky_sun_rotation = 3.54302
+  world_sky_altitude = 20000
+  world_sky_air_density = 1
+  world_sky_dust_density = 0.05
+  world_sky_ozone_density = 0.05
+  world_hs_sky_sat = 0.75
+  world_hs_sky_val = 0.9
+  world_hs_env_sat = 0.6
+  world_use_noise = True
+  world_use_gamma = False
+  world_gamma1 = 1.0
+  world_gamma2 = 0.9
+  world_use_multiply = False
+  world_multiply_blend = "MIX"
+  world_multiply_factor = 0.0
+  world_hs_env2_sat = None
 
 
 def _make_config():
@@ -67,20 +91,108 @@ for game_key, overrides in {
     "INF": {"resolution": (320, 240), "camera_ortho_scale": 14.96, "sun_location": (0, 0, 12.27), "sun_rotation": (0, 0, 0)},
   },
   "TS": {
-    "BASE": {"camera_ortho_scale": 37.4, "sun_location": (-0.800477, -10.1766, 12.27), "sun_rotation": (0.633555, 0.0726057, 6.10865), "sun_energy": 5},
+    "BASE": {
+      "camera_ortho_scale": 37.4,
+      "sun_location": (-0.800477, -10.1766, 12.27),
+      "sun_rotation": (0.633555, 0.0726057, 6.10865),
+      "sun_energy": 4,
+      "sun_shadow_energy": 1.0,
+      "world_color": (0.191202, 0.191202, 0.191202),
+      "world_use_sky_texture": False,
+      "world_mapping1_rot_z": -1.22173,
+      "world_hs_env_sat": 1.2,
+      "world_hs_env2_sat": 1.3,
+      "world_use_noise": False,
+    },
     "INF": {"resolution": (320, 240), "camera_ortho_scale": 18.7},
   },
   "RW": {
-    "BASE": {"resolution": (1280, 960), "camera_ortho_scale": 37.4, "sun_location": (-0.800477, -10.1766, 12.27), "sun_rotation": (0.633555, 0.0726057, 6.10865), "sun_energy": 7.5},
+    "BASE": {
+      "resolution": (1280, 960),
+      "camera_ortho_scale": 37.4,
+      "sun_location": (-0.800477, -10.1766, 12.27),
+      "sun_rotation": (0.633555, 0.0726057, 6.10865),
+      "sun_energy": 6.5,
+      "sun_shadow_energy": 2.1,
+      "world_color": (0.0998987, 0.0684781, 0.0318961),
+      "world_use_sky_texture": False,
+      "world_mapping1_rot_z": -1.22173,
+      "world_hs_sky_sat": 0.35,
+      "world_hs_env_sat": 0.25,
+      "world_use_noise": False,
+    },
   },
   "RA1": {
-    "BASE": {"camera_type": "PERSP", "camera_location": (0, -36.2837, 30.4457), "camera_rotation": (0.872665, 0, 0), "camera_ortho_scale": 1.0472, "camera_iso_location": (0, -31.96573, 26.8228), "camera_iso_rotation": (0.872665, 0, 0), "camera_iso_ortho_scale": 53.37, "sun_location": (-4.0, 4.0, 16.0), "sun_rotation": (-0.10472, -0.179769, 0.00762709), "sun_energy": 6.5, "sky_sun_elevation": 1.37881, "sky_sun_rotation": 5.29184},
+    "BASE": {
+      "camera_type": "PERSP",
+      "camera_location": (0, -36.2837, 30.4457),
+      "camera_rotation": (0.872665, 0, 0),
+      "camera_ortho_scale": 1.0472,
+      "camera_iso_location": (0, -31.96573, 26.8228),
+      "camera_iso_rotation": (0.872665, 0, 0),
+      "camera_iso_ortho_scale": 53.37,
+      "sun_location": (-4.0, 4.0, 16.0),
+      "sun_rotation": (-0.10472, -0.179769, 0.00762709),
+      "sun_energy": 5.5,
+      "sun_shadow_energy": 2.3,
+      "world_use_sky_texture": False,
+      "world_mapping1_rot_z": -1.22173,
+      "world_mapping2_translate_z": 0.3,
+      "world_hs_env_sat": 1.0,
+      "world_use_gamma": True,
+      "world_gamma1": 1.0,
+      "world_gamma2": 0.9,
+      "world_use_multiply": True,
+      "world_multiply_blend": "MULTIPLY",
+      "world_multiply_factor": 0.3,
+      "world_use_noise": False,
+    },
   },
   "RM": {
-    "BASE": {"camera_type": "PERSP", "camera_location": (0, -36.2837, 30.4457), "camera_rotation": (0.872665, 0, 0), "camera_ortho_scale": 20.0138, "camera_iso_location": (0, -31.9657, 26.8228), "camera_iso_rotation": (0.872665, 0, 0), "camera_iso_ortho_scale": 20.0138, "sun_location": (-4.0, 4.0, 16.0), "sun_rotation": (-0.10472, -0.179769, 0.00762709), "sun_energy": 6.5, "sky_sun_elevation": 1.37881, "sky_sun_rotation": 5.29184},
+    "BASE": {
+      "camera_type": "PERSP",
+      "camera_location": (0, -36.2837, 30.4457),
+      "camera_rotation": (0.872665, 0, 0),
+      "camera_ortho_scale": 20.0138,
+      "camera_iso_location": (0, -31.9657, 26.8228),
+      "camera_iso_rotation": (0.872665, 0, 0),
+      "camera_iso_ortho_scale": 20.0138,
+      "sun_location": (-4.0, 4.0, 16.0),
+      "sun_rotation": (-0.10472, -0.179769, 0.00762709),
+      "sun_energy": 5.5,
+      "sun_shadow_energy": 2.3,
+      "world_use_sky_texture": False,
+      "world_mapping1_rot_z": -1.22173,
+      "world_mapping2_translate_z": 0.3,
+      "world_hs_env_sat": 1.0,
+      "world_use_gamma": True,
+      "world_gamma1": 1.0,
+      "world_gamma2": 0.9,
+      "world_use_multiply": True,
+      "world_multiply_blend": "MULTIPLY",
+      "world_multiply_factor": 0.3,
+      "world_use_noise": False,
+    },
   },
   "D2K": {
-    "BASE": {"camera_type": "PERSP", "camera_location": (0, -28.3854, 23.8179), "camera_rotation": (0.872665, 0, 0), "camera_ortho_scale": 39.4299, "camera_iso_location": (0, -37.8463, 31.7564), "camera_iso_rotation": (0.872665, 0, 0), "camera_iso_ortho_scale": 39.4299, "sun_location": (-4.0, 4.0, 16.0), "sun_rotation": (-0.698132, 0, 2.35619), "sun_energy": 6.5, "sky_sun_elevation": 0.884882, "sky_sun_rotation": 3.92874},
+    "BASE": {
+      "camera_type": "PERSP",
+      "camera_location": (0, -28.3854, 23.8179),
+      "camera_rotation": (0.872665, 0, 0),
+      "camera_ortho_scale": 39.4299,
+      "camera_iso_location": (0, -37.8463, 31.7564),
+      "camera_iso_rotation": (0.872665, 0, 0),
+      "camera_iso_ortho_scale": 39.4299,
+      "sun_location": (-4.0, 4.0, 16.0),
+      "sun_rotation": (-0.698132, 0, 2.35619),
+      "sun_energy": 5.5,
+      "sun_shadow_energy": 2.3,
+      "world_use_sky_texture": False,
+      "world_mapping1_rot_z": -1.22173,
+      "world_hs_env_sat": 1.4,
+      "world_hs_env2_sat": 1.5,
+      "world_use_noise": False,
+    },
   },
 }.items():
   base = _make_config()
@@ -123,7 +235,6 @@ def save_scene_state(context):
     "frame_start": scene.frame_start,
     "frame_end": scene.frame_end,
     "world": scene.world.name if scene.world else "",
-    "compositor": scene.compositing_node_group.name if scene.compositing_node_group else "",
   }
   context.scene.cc_toolkit.saved_state = json.dumps(state)
 
@@ -145,8 +256,6 @@ def restore_scene_state(context):
   scene.frame_end = state["frame_end"]
   if state["world"] and state["world"] in bpy.data.worlds:
     scene.world = bpy.data.worlds[state["world"]]
-  if state["compositor"] and state["compositor"] in bpy.data.node_groups:
-    scene.compositing_node_group = bpy.data.node_groups[state["compositor"]]
 
 
 # ──────────────────────────────────────────────
@@ -174,8 +283,9 @@ def clear_template(context):
     if obj.name.startswith(PREFIX):
       bpy.data.objects.remove(obj, do_unlink=True)
 
-  if context.scene.compositing_node_group and context.scene.compositing_node_group.name.startswith(PREFIX):
-    context.scene.compositing_node_group = None
+  if context.scene.use_nodes and context.scene.node_tree:
+    for node in list(context.scene.node_tree.nodes):
+      context.scene.node_tree.nodes.remove(node)
 
 
 def _delete_collection(coll):
@@ -200,10 +310,13 @@ def rebuild_all(context):
   create_camera(context, props)
   create_light(context, props)
   create_world(context, props)
-  create_planes(context)
+  create_planes(context, props)
   create_compositor(context, props)
 
-  arrange_nodes([tree for tree in bpy.data.node_groups if tree.name.startswith(PREFIX) or ALPHA_CONVERT_NAME in tree.name])
+  trees_to_arrange = [tree for tree in bpy.data.node_groups if tree.name.startswith(PREFIX) or ALPHA_CONVERT_NAME in tree.name]
+  if context.scene.use_nodes and context.scene.node_tree:
+    trees_to_arrange.append(context.scene.node_tree)
+  arrange_nodes(trees_to_arrange)
 
   apply_render_settings(context, props)
   apply_render_type_visibility(context)
@@ -258,7 +371,6 @@ def create_camera(context, props):
     cam.data.angle = 1.0472
   else:
     cam.data.ortho_scale = ortho_scale
-    cam.data.clip_end = config.camera_clip_end
   context.scene.camera = cam
   _set_camera_view(context)
 
@@ -273,12 +385,14 @@ def _set_camera_view(context):
 
 
 # ──────────────────────────────────────────────
-# Light
+# Light (dual sun — primary + shadow)
 # ──────────────────────────────────────────────
 def create_light(context, props):
   vll = context.view_layer.layer_collection
   context.view_layer.active_layer_collection = vll.children[COLLECTION_NAME]
   config = get_config(props.game, props.variant)
+
+  # Primary sun
   bpy.ops.object.light_add(
     type="SUN", radius=1, align="WORLD",
     location=config.sun_location, rotation=config.sun_rotation,
@@ -289,34 +403,71 @@ def create_light(context, props):
   sun.data.energy = config.sun_energy
   sun.data.angle = config.sun_angle
   sun.data.cycles.use_multiple_importance_sampling = False
+  sun.data.shadow_buffer_bias = 0.02
+  sun.data.shadow_cascade_count = 2
+  sun.data.shadow_cascade_fade = 1
+  sun.data.shadow_cascade_max_distance = 1000
+  sun.data.shadow_cascade_exponent = 0.8
+  sun.data.use_contact_shadow = True
+  sun.data.contact_shadow_distance = 1000
+  sun.data.contact_shadow_bias = 0.5
+  sun.data.contact_shadow_thickness = 0.7
   sun.hide_select = True
   sun.hide_render = True
 
+  # Shadow sun
+  bpy.ops.object.light_add(
+    type="SUN", radius=1, align="WORLD",
+    location=config.sun_location, rotation=config.sun_rotation,
+  )
+  sun2 = context.active_object
+  sun2.name = f"{PREFIX}Sun.shadow"
+  sun2.data.name = f"{PREFIX}Sun.shadow"
+  sun2.data.energy = config.sun_shadow_energy
+  sun2.data.angle = config.sun_angle
+  sun2.data.cycles.use_multiple_importance_sampling = False
+  sun2.data.shadow_buffer_bias = 0.02
+  sun2.data.shadow_cascade_count = config.sun_shadow_cascade_count
+  sun2.data.shadow_cascade_fade = config.sun_shadow_cascade_fade
+  sun2.data.shadow_cascade_max_distance = config.sun_shadow_cascade_max_distance
+  sun2.data.shadow_cascade_exponent = config.sun_shadow_cascade_exponent
+  sun2.data.use_contact_shadow = False
+  sun2.hide_select = True
+  sun2.hide_render = True
+  sun2.hide_viewport = True
+
 
 # ──────────────────────────────────────────────
-# World
+# World (unified config-driven)
 # ──────────────────────────────────────────────
 def create_world(context, props):
   config = get_config(props.game, props.variant)
 
   world = bpy.data.worlds.new(WORLD_NAME)
   context.scene.world = world
-  world.color = (0, 0, 0)
+  world.use_nodes = True
+  world.color = config.world_color
 
   tree = world.node_tree
+
+  # Dual output: Cycles + Eevee
   out_cycles = tree.nodes["World Output"]
   out_cycles.target = "CYCLES"
   out_eevee = tree.nodes.new("ShaderNodeOutputWorld")
   out_eevee.target = "EEVEE"
   tree.links.remove(out_cycles.inputs[0].links[0])
 
+  # Common nodes
   tex_coord = tree.nodes.new("ShaderNodeTexCoord")
   lightpath = tree.nodes.new("ShaderNodeLightPath")
-  mapping1 = tree.nodes.new("ShaderNodeMapping")
-  mapping1.inputs[1].default_value[2] = 0.3
-  mapping2 = tree.nodes.new("ShaderNodeMapping")
-  mapping2.inputs[2].default_value[2] = -1.5708
 
+  # Mapping nodes
+  mapping1 = tree.nodes.new("ShaderNodeMapping")
+  mapping1.inputs[2].default_value[2] = config.world_mapping1_rot_z
+  mapping2 = tree.nodes.new("ShaderNodeMapping")
+  mapping2.inputs[1].default_value[2] = config.world_mapping2_translate_z
+
+  # HDRI texture
   data_image = bpy.data.images.get(os.path.basename(config.hdri))
   if not data_image:
     data_image = bpy.data.images.load(config.hdri)
@@ -324,15 +475,18 @@ def create_world(context, props):
   tex_env.image = data_image
   tex_env.image.use_fake_user = True
 
+  # Hue saturation nodes
   hs_sky = tree.nodes.new("ShaderNodeHueSaturation")
   hs_sky.inputs[0].default_value = 0.5
-  hs_sky.inputs[1].default_value = 0.75
-  hs_sky.inputs[2].default_value = 0.9
+  hs_sky.inputs[1].default_value = config.world_hs_sky_sat
+  hs_sky.inputs[2].default_value = config.world_hs_sky_val
+
   hs_env = tree.nodes.new("ShaderNodeHueSaturation")
   hs_env.inputs[0].default_value = 0.5
   hs_env.inputs[1].default_value = 0.5
-  hs_env.inputs[2].default_value = 0.6
+  hs_env.inputs[2].default_value = config.world_hs_env_sat
 
+  # Background nodes
   bg_cycles = tree.nodes["Background"]
   bg_sky = tree.nodes.new("ShaderNodeBackground")
   bg_sky.inputs[0].default_value = (1, 1, 1, 1)
@@ -341,54 +495,12 @@ def create_world(context, props):
   bg_eevee = tree.nodes.new("ShaderNodeBackground")
   bg_eevee.inputs[0].default_value = (0, 0.5, 0.5, 1)
 
+  # Mix shaders
   mix1 = tree.nodes.new("ShaderNodeMixShader")
   mix2 = tree.nodes.new("ShaderNodeMixShader")
   mix3 = tree.nodes.new("ShaderNodeMixShader")
-  mix_rgb = tree.nodes.new("ShaderNodeMixRGB")
-  mix_rgb.inputs[1].default_value = (0, 0, 0, 1)
 
-  cr1 = tree.nodes.new("ShaderNodeValToRGB")
-  cr1.color_ramp.elements[0].position = 0.25
-  cr1.color_ramp.elements[1].position = 0.327273
-  cr2 = tree.nodes.new("ShaderNodeValToRGB")
-  cr2.color_ramp.interpolation = "EASE"
-  cr2.color_ramp.elements[0].position = 0.5
-  cr2.color_ramp.elements[1].position = 1.0
-
-  sep_rgb = tree.nodes.new("ShaderNodeSeparateColor")
-  sky = tree.nodes.new("ShaderNodeTexSky")
-  sky.sun_size = 0
-  sky.sun_intensity = 0.1
-  sky.sun_elevation = config.sky_sun_elevation
-  sky.sun_rotation = config.sky_sun_rotation
-  sky.altitude = 20000
-  sky.air_density = 1
-  sky.aerosol_density = 0.05
-  sky.ozone_density = 0.05
-  sky.sky_type = "SINGLE_SCATTERING"
-
-  noise = tree.nodes.new("ShaderNodeTexNoise")
-  noise.inputs[2].default_value = 4
-  noise.inputs[3].default_value = 5
-  noise.inputs[5].default_value = 0.5
-
-  tree.links.new(mix1.outputs[0], out_cycles.inputs[0])
-  tree.links.new(lightpath.outputs[0], mix1.inputs[0])
-  tree.links.new(mix2.outputs[0], mix1.inputs[1])
-  tree.links.new(mix_rgb.outputs[0], mix2.inputs[0])
-  tree.links.new(cr1.outputs[0], mix_rgb.inputs[0])
-  tree.links.new(sep_rgb.outputs[2], cr1.inputs[0])
-  tree.links.new(mapping1.outputs[0], sep_rgb.inputs[0])
-  tree.links.new(tex_coord.outputs[0], mapping1.inputs[0])
-  tree.links.new(bg_cycles.outputs[0], mix2.inputs[1])
-  tree.links.new(hs_sky.outputs[0], bg_cycles.inputs[0])
-  tree.links.new(sky.outputs[0], hs_sky.inputs[4])
-  tree.links.new(bg_sky.outputs[0], mix2.inputs[2])
-  tree.links.new(bg_blue.outputs[0], mix1.inputs[2])
-  tree.links.new(cr2.outputs[0], mix_rgb.inputs[2])
-  tree.links.new(noise.outputs[0], cr2.inputs[0])
-  tree.links.new(mapping1.outputs[0], noise.inputs[0])
-
+  # Eevee path: tex_coord → mapping2 → tex_env → hs_env → bg_eevee → mix3 → out_eevee
   tree.links.new(mix3.outputs[0], out_eevee.inputs[0])
   tree.links.new(lightpath.outputs[0], mix3.inputs[0])
   tree.links.new(bg_blue.outputs[0], mix3.inputs[2])
@@ -398,11 +510,134 @@ def create_world(context, props):
   tree.links.new(mapping2.outputs[0], tex_env.inputs[0])
   tree.links.new(tex_coord.outputs[0], mapping2.inputs[0])
 
+  if config.world_use_sky_texture:
+    # RA2-style: Sky Texture for Cycles + noise-based blending
+    sky = tree.nodes.new("ShaderNodeTexSky")
+    sky.sky_type = "NISHITA"
+    sky.sun_size = 0
+    sky.sun_intensity = 0.05
+    sky.sun_elevation = config.world_sky_sun_elevation
+    sky.sun_rotation = config.world_sky_sun_rotation
+    sky.altitude = config.world_sky_altitude
+    sky.air_density = config.world_sky_air_density
+    sky.dust_density = config.world_sky_dust_density
+    sky.ozone_density = config.world_sky_ozone_density
+
+    sep_rgb = tree.nodes.new("ShaderNodeSeparateRGB")
+    mix_rgb = tree.nodes.new("ShaderNodeMixRGB")
+    mix_rgb.inputs[1].default_value = (0, 0, 0, 1)
+
+    cr1 = tree.nodes.new("ShaderNodeValToRGB")
+    cr1.color_ramp.elements[0].position = 0.25
+    cr1.color_ramp.elements[1].position = 0.327273
+    cr2 = tree.nodes.new("ShaderNodeValToRGB")
+    cr2.color_ramp.interpolation = "EASE"
+    cr2.color_ramp.elements[0].position = 0.5
+    cr2.color_ramp.elements[1].position = 1.0
+
+    noise = tree.nodes.new("ShaderNodeTexNoise")
+    noise.inputs[2].default_value = 4
+    noise.inputs[3].default_value = 5
+    noise.inputs[5].default_value = 0.5
+
+    # Cycles path
+    tree.links.new(mix1.outputs[0], out_cycles.inputs[0])
+    tree.links.new(lightpath.outputs[0], mix1.inputs[0])
+    tree.links.new(mix2.outputs[0], mix1.inputs[1])
+    tree.links.new(mix_rgb.outputs[0], mix2.inputs[0])
+    tree.links.new(cr1.outputs[0], mix_rgb.inputs[0])
+    tree.links.new(sep_rgb.outputs[2], cr1.inputs[0])
+    tree.links.new(mapping1.outputs[0], sep_rgb.inputs[0])
+    tree.links.new(tex_coord.outputs[0], mapping1.inputs[0])
+    tree.links.new(bg_cycles.outputs[0], mix2.inputs[1])
+    tree.links.new(hs_sky.outputs[0], bg_cycles.inputs[0])
+    tree.links.new(sky.outputs[0], hs_sky.inputs[4])
+    tree.links.new(bg_sky.outputs[0], mix2.inputs[2])
+    tree.links.new(bg_blue.outputs[0], mix1.inputs[2])
+    tree.links.new(cr2.outputs[0], mix_rgb.inputs[2])
+    tree.links.new(noise.outputs[0], cr2.inputs[0])
+    tree.links.new(mapping1.outputs[0], noise.inputs[0])
+
+  elif config.world_use_gamma:
+    # RA1/RM-style: gamma + hue saturation + color ramp + multiply
+    gamma1 = tree.nodes.new("ShaderNodeGamma")
+    gamma1.inputs[1].default_value = config.world_gamma1
+    gamma2 = tree.nodes.new("ShaderNodeGamma")
+    gamma2.inputs[1].default_value = config.world_gamma2
+
+    sep_rgb = tree.nodes.new("ShaderNodeSeparateRGB")
+    mix_rgb = tree.nodes.new("ShaderNodeMixRGB")
+    mix_rgb.blend_type = config.world_multiply_blend
+    mix_rgb.inputs[0].default_value = config.world_multiply_factor
+
+    cr = tree.nodes.new("ShaderNodeValToRGB")
+    cr.color_ramp.elements[0].position = 0.25
+    cr.color_ramp.elements[1].position = 0.327273
+
+    # Cycles path
+    tree.links.new(mix1.outputs[0], out_cycles.inputs[0])
+    tree.links.new(lightpath.outputs[0], mix1.inputs[0])
+    tree.links.new(mix2.outputs[0], mix1.inputs[1])
+    tree.links.new(lightpath.outputs[3], mix1.inputs[2])
+    tree.links.new(lightpath.outputs[3], mix2.inputs[0])
+    tree.links.new(bg_cycles.outputs[0], mix2.inputs[1])
+    tree.links.new(bg_blue.outputs[0], mix2.inputs[2])
+    tree.links.new(gamma1.outputs[0], bg_cycles.inputs[0])
+    tree.links.new(hs_sky.outputs[0], gamma2.inputs[0])
+    tree.links.new(gamma2.outputs[0], bg_sky.inputs[0])
+    tree.links.new(bg_sky.outputs[0], mix1.inputs[1])
+    tree.links.new(tex_env.outputs[0], mix_rgb.inputs[1])
+    tree.links.new(mapping1.outputs[0], tex_env.inputs[0])
+    tree.links.new(tex_coord.outputs[0], mapping1.inputs[0])
+    tree.links.new(cr.outputs[0], mix_rgb.inputs[2])
+    tree.links.new(sep_rgb.outputs[2], cr.inputs[0])
+    tree.links.new(mapping2.outputs[0], sep_rgb.inputs[0])
+    tree.links.new(tex_coord.outputs[0], mapping2.inputs[0])
+    tree.links.new(mix_rgb.outputs[0], gamma1.inputs[0])
+    tree.links.new(mix_rgb.outputs[0], hs_sky.inputs[0])
+
+  else:
+    # TS/RW/D2K-style: simple hue saturation only
+    # For TS/RW/D2K, create a second hue saturation for Eevee
+    if config.world_hs_env2_sat is not None:
+      hs_env2 = tree.nodes.new("ShaderNodeHueSaturation")
+      hs_env2.inputs[0].default_value = 0.5
+      hs_env2.inputs[1].default_value = 0.5
+      hs_env2.inputs[2].default_value = config.world_hs_env2_sat
+
+      # Cycles path uses hs_sky
+      tree.links.new(mix1.outputs[0], out_cycles.inputs[0])
+      tree.links.new(lightpath.outputs[0], mix1.inputs[0])
+      tree.links.new(mix2.outputs[0], mix1.inputs[1])
+      tree.links.new(lightpath.outputs[3], mix1.inputs[2])
+      tree.links.new(lightpath.outputs[3], mix2.inputs[0])
+      tree.links.new(bg_cycles.outputs[0], mix2.inputs[1])
+      tree.links.new(bg_blue.outputs[0], mix2.inputs[2])
+      tree.links.new(hs_sky.outputs[0], bg_cycles.inputs[0])
+      tree.links.new(tex_env.outputs[0], hs_sky.inputs[4])
+      tree.links.new(mapping1.outputs[0], tex_env.inputs[0])
+      tree.links.new(tex_coord.outputs[0], mapping1.inputs[0])
+      tree.links.new(tex_env.outputs[0], hs_env2.inputs[4])
+      tree.links.new(hs_env2.outputs[0], bg_eevee.inputs[0])
+    else:
+      # Simple single hue saturation for both
+      tree.links.new(mix1.outputs[0], out_cycles.inputs[0])
+      tree.links.new(lightpath.outputs[0], mix1.inputs[0])
+      tree.links.new(mix2.outputs[0], mix1.inputs[1])
+      tree.links.new(lightpath.outputs[3], mix1.inputs[2])
+      tree.links.new(lightpath.outputs[3], mix2.inputs[0])
+      tree.links.new(bg_cycles.outputs[0], mix2.inputs[1])
+      tree.links.new(bg_blue.outputs[0], mix2.inputs[2])
+      tree.links.new(hs_sky.outputs[0], bg_cycles.inputs[0])
+      tree.links.new(tex_env.outputs[0], hs_sky.inputs[4])
+      tree.links.new(mapping1.outputs[0], tex_env.inputs[0])
+      tree.links.new(tex_coord.outputs[0], mapping1.inputs[0])
+
 
 # ──────────────────────────────────────────────
 # Planes and materials
 # ──────────────────────────────────────────────
-def _make_plane(name, size=140, location=(0, 0, -0.01), hide_render=True, hide_viewport=True, glossy=False, shadow_catcher=False, material=None):
+def _make_plane(name, size=140, location=(0, 0, -0.01), hide_render=True, hide_viewport=True, glossy=False, shadow_catcher=False, is_holdout=False, material=None):
   bpy.ops.mesh.primitive_plane_add(size=size, enter_editmode=False, align="WORLD", location=location)
   obj = bpy.context.active_object
   obj.name = name
@@ -410,6 +645,7 @@ def _make_plane(name, size=140, location=(0, 0, -0.01), hide_render=True, hide_v
   obj.hide_viewport = hide_viewport
   obj.visible_glossy = glossy
   obj.is_shadow_catcher = shadow_catcher
+  obj.is_holdout = is_holdout
   if material:
     obj.data.materials.append(material)
   return obj
@@ -417,6 +653,7 @@ def _make_plane(name, size=140, location=(0, 0, -0.01), hide_render=True, hide_v
 
 def _ambient_mat():
   m = bpy.data.materials.new(name=f"{PREFIX}Plane.ambient")
+  m.use_nodes = True
   m.node_tree.nodes.remove(m.node_tree.nodes["Principled BSDF"])
   out = m.node_tree.nodes["Material Output"]
   lp = m.node_tree.nodes.new("ShaderNodeLightPath")
@@ -441,6 +678,7 @@ def _ambient_mat():
 
 def _blue_mat():
   m = bpy.data.materials.new(name=f"{PREFIX}Plane.blue")
+  m.use_nodes = True
   m.node_tree.nodes.remove(m.node_tree.nodes["Principled BSDF"])
   out = m.node_tree.nodes["Material Output"]
   lp = m.node_tree.nodes.new("ShaderNodeLightPath")
@@ -467,6 +705,7 @@ def _blue_mat():
 
 def _grey_mat():
   m = bpy.data.materials.new(name=f"{PREFIX}Plane.grey")
+  m.use_nodes = True
   m.node_tree.nodes.remove(m.node_tree.nodes["Principled BSDF"])
   out = m.node_tree.nodes["Material Output"]
   lp = m.node_tree.nodes.new("ShaderNodeLightPath")
@@ -487,6 +726,7 @@ def _grey_mat():
 
 def _holdout_mat():
   m = bpy.data.materials.new(name=f"{PREFIX}Plane.holdout")
+  m.use_nodes = True
   m.node_tree.nodes.remove(m.node_tree.nodes["Principled BSDF"])
   out = m.node_tree.nodes["Material Output"]
   lp = m.node_tree.nodes.new("ShaderNodeLightPath")
@@ -506,12 +746,17 @@ def _holdout_mat():
   m.node_tree.links.new(mx2.outputs[0], mx3.inputs[1])
   m.node_tree.links.new(ho.outputs[0], mx3.inputs[2])
   m.node_tree.links.new(mx3.outputs[0], out.inputs[0])
+  m.blend_method = "BLEND"
+  m.shadow_method = "NONE"
   return m
 
 
 def _shadow_mat():
   m = bpy.data.materials.new(name=f"{PREFIX}Plane.shadow")
+  m.use_nodes = True
   m.node_tree.nodes.remove(m.node_tree.nodes["Principled BSDF"])
+
+  # Cycles output
   out_c = m.node_tree.nodes["Material Output"]
   out_c.target = "CYCLES"
   lp = m.node_tree.nodes.new("ShaderNodeLightPath")
@@ -527,32 +772,46 @@ def _shadow_mat():
   m.node_tree.links.new(d2.outputs[0], mx1.inputs[2])
   m.node_tree.links.new(mx1.outputs[0], mx2.inputs[2])
   m.node_tree.links.new(mx2.outputs[0], out_c.inputs[0])
+
+  # Eevee output (Shader to RGB shadow catcher)
   out_e = m.node_tree.nodes.new("ShaderNodeOutputMaterial")
   out_e.target = "EEVEE"
-  mx3 = m.node_tree.nodes.new("ShaderNodeMixShader")
-  pbr = m.node_tree.nodes.new("ShaderNodeBsdfPrincipled")
-  pbr.inputs[0].default_value = (0.371235, 0.371238, 0.371238, 0)
-  pbr.inputs[2].default_value = 0.0
-  tr2 = m.node_tree.nodes.new("ShaderNodeBsdfTransparent")
-  s2r = m.node_tree.nodes.new("ShaderNodeShaderToRGB")
   d3 = m.node_tree.nodes.new("ShaderNodeBsdfDiffuse")
-  d3.inputs[0].default_value = (0, 0, 0, 1)
+  d3.inputs[0].default_value = (1, 1, 1, 1)
   d3.inputs[1].default_value = 0
-  m.node_tree.links.new(pbr.outputs[0], s2r.inputs[0])
-  m.node_tree.links.new(s2r.outputs[0], mx3.inputs[0])
-  m.node_tree.links.new(d3.outputs[0], mx3.inputs[1])
-  m.node_tree.links.new(tr2.outputs[0], mx3.inputs[2])
+  s2r = m.node_tree.nodes.new("ShaderNodeShaderToRGB")
+  rgb2bw = m.node_tree.nodes.new("ShaderNodeRGBToBW")
+  cr = m.node_tree.nodes.new("ShaderNodeValToRGB")
+  cr.color_ramp.elements[0].position = 0.0
+  cr.color_ramp.elements[0].color = (1, 1, 1, 1)
+  cr.color_ramp.elements[1].position = 0.5
+  cr.color_ramp.elements[1].color = (0, 0, 0, 1)
+  tr2 = m.node_tree.nodes.new("ShaderNodeBsdfTransparent")
+  d4 = m.node_tree.nodes.new("ShaderNodeBsdfDiffuse")
+  d4.inputs[0].default_value = (0.090655, 0.090655, 0.090655, 1)
+  d4.inputs[1].default_value = 0
+  mx3 = m.node_tree.nodes.new("ShaderNodeMixShader")
+
+  m.node_tree.links.new(d3.outputs[0], s2r.inputs[0])
+  m.node_tree.links.new(s2r.outputs[0], rgb2bw.inputs[0])
+  m.node_tree.links.new(rgb2bw.outputs[0], cr.inputs[0])
+  m.node_tree.links.new(cr.outputs[0], mx3.inputs[0])
+  m.node_tree.links.new(tr2.outputs[0], mx3.inputs[1])
+  m.node_tree.links.new(d4.outputs[0], mx3.inputs[2])
   m.node_tree.links.new(mx3.outputs[0], out_e.inputs[0])
+
+  m.blend_method = "BLEND"
+  m.shadow_method = "NONE"
   return m
 
 
-
-def create_planes(context):
+def create_planes(context, props):
   ambient = _ambient_mat()
   blue = _blue_mat()
   grey = _grey_mat()
   holdout = _holdout_mat()
   shadow = _shadow_mat()
+  use_shadow_catcher = props.engine == "CYCLES"
 
   vll = context.view_layer.layer_collection
   context.view_layer.active_layer_collection = vll.children[COLLECTION_NAME]
@@ -560,42 +819,44 @@ def create_planes(context):
   _make_plane(f"{PREFIX}Plane.ambient", location=(0, 0, -20), hide_render=True, hide_viewport=True, material=ambient)
   _make_plane(f"{PREFIX}Plane.blue", hide_render=True, hide_viewport=True, material=blue)
   _make_plane(f"{PREFIX}Plane.grey", hide_render=True, hide_viewport=True, material=grey)
-  _make_plane(f"{PREFIX}Plane.holdout2", hide_render=True, hide_viewport=True, material=holdout)
-  obj = _make_plane(f"{PREFIX}Plane.shadow2", hide_render=True, hide_viewport=True, shadow_catcher=True, material=shadow)
-  obj.active_material.surface_render_method = "BLENDED"
+  _make_plane(f"{PREFIX}Plane.holdout2", hide_render=True, hide_viewport=True, is_holdout=True, material=holdout)
+  obj = _make_plane(f"{PREFIX}Plane.shadow2", hide_render=True, hide_viewport=True, shadow_catcher=use_shadow_catcher, material=shadow)
+  try: obj.active_material.surface_render_method = "BLENDED"
+  except AttributeError: pass
 
   shadow_coll = vll.children[COLLECTION_NAME].children[f"{COLLECTION_NAME} Shadow"]
   context.view_layer.active_layer_collection = shadow_coll
-  obj = _make_plane(f"{PREFIX}Plane.shadow", hide_render=True, hide_viewport=True, shadow_catcher=True, material=shadow)
-  obj.active_material.surface_render_method = "BLENDED"
+  obj = _make_plane(f"{PREFIX}Plane.shadow", hide_render=True, hide_viewport=True, shadow_catcher=use_shadow_catcher, material=shadow)
+  try: obj.active_material.surface_render_method = "BLENDED"
+  except AttributeError: pass
 
   holdout_coll = vll.children[COLLECTION_NAME].children[f"{COLLECTION_NAME} Holdout"]
   context.view_layer.active_layer_collection = holdout_coll
-  _make_plane(f"{PREFIX}Plane.holdout", location=(0, 0, -0.015), hide_render=True, hide_viewport=True, material=holdout)
+  _make_plane(f"{PREFIX}Plane.holdout", location=(0, 0, -0.015), hide_render=True, hide_viewport=True, is_holdout=True, material=holdout)
   holdout_coll.exclude = True
 
 
 # ──────────────────────────────────────────────
-# Compositor
+# Compositor (scene.node_tree — Blender 3.0 API)
 # ──────────────────────────────────────────────
 def create_compositor(context, props):
   scene = context.scene
   prefix = ALPHA_CONVERT_NAME
+
+  # Alpha Convert node group — Blender 3.0 API: inputs.new() / outputs.new()
   alpha_group = bpy.data.node_groups.new(type="CompositorNodeTree", name=prefix)
-  alpha_group.interface.new_socket(name="Image", in_out="INPUT", socket_type="NodeSocketColor")
-  alpha_group.interface.new_socket(name="Image", in_out="OUTPUT", socket_type="NodeSocketColor")
-  alpha_group.interface.new_socket(name="Alpha", in_out="OUTPUT", socket_type="NodeSocketFloat")
+  alpha_group.inputs.new("NodeSocketColor", "Image")
+  alpha_group.outputs.new("NodeSocketColor", "Image")
+  alpha_group.outputs.new("NodeSocketFloat", "Alpha")
   gi = alpha_group.nodes.new("NodeGroupInput")
   gi.location = (-400, 0)
   go = alpha_group.nodes.new("NodeGroupOutput")
   go.location = (400, 0)
-  s_hsva = alpha_group.nodes.new("CompositorNodeSeparateColor")
-  s_hsva.mode = "HSV"
+  s_hsva = alpha_group.nodes.new("CompositorNodeSepHSVA")
   s_hsva.location = (-200, 200)
-  c_hsva = alpha_group.nodes.new("CompositorNodeCombineColor")
-  c_hsva.mode = "HSV"
+  c_hsva = alpha_group.nodes.new("CompositorNodeCombHSVA")
   c_hsva.location = (200, 200)
-  math_op = alpha_group.nodes.new("ShaderNodeMath")
+  math_op = alpha_group.nodes.new("CompositorNodeMath")
   math_op.location = (0, 0)
   math_op.operation = "GREATER_THAN"
   math_op.inputs[1].default_value = 0.325
@@ -610,42 +871,53 @@ def create_compositor(context, props):
 
   config = get_config(props.game, props.variant)
 
-  node_tree = bpy.data.node_groups.new(name=COMP_TREE_NAME, type="CompositorNodeTree")
-  scene.compositing_node_group = node_tree
+  # Use the scene's existing compositor node tree
+  scene.use_nodes = True
+  node_tree = scene.node_tree
   nodes = node_tree.nodes
   links = node_tree.links
 
+  # Clear existing default nodes
+  for node in list(nodes):
+    nodes.remove(node)
+
   rl = nodes.new("CompositorNodeRLayers")
   rl.location = (0, 0)
-  go = nodes.new("NodeGroupOutput")
+  go = nodes.new("CompositorNodeComposite")
   go.location = (800, 0)
-  node_tree.interface.new_socket(name="Image", in_out="OUTPUT", socket_type="NodeSocketColor")
+
+  if props.denoise_composite:
+    denoise = nodes.new("CompositorNodeDenoise")
+    denoise.prefilter = "NONE"
+    denoise.location = (200, 0)
+    links.new(rl.outputs[0], denoise.inputs[0])
+    links.new(rl.outputs[3], denoise.inputs[1])
+    links.new(rl.outputs[4], denoise.inputs[2])
+  else:
+    denoise = rl
 
   render_type = props.render_type
 
   if render_type == "DEFAULT":
     scene.render.film_transparent = False
-    links.new(rl.outputs[0], go.inputs[0])
+    links.new(denoise.outputs[0], go.inputs[0])
     scene.render.image_settings.color_mode = "RGB"
 
   elif render_type == "PREVIEW":
-    _wire_preview(node_tree, rl, go, links, nodes, props, config)
+    _wire_preview(node_tree, rl, denoise, go, links, nodes, props, config)
 
-  elif render_type == "OBJECT":
-    _wire_object_or_buildup(node_tree, rl, go, links, nodes, props)
-
-  elif render_type == "BUILDUP":
-    _wire_object_or_buildup(node_tree, rl, go, links, nodes, props)
+  elif render_type in ("OBJECT", "BUILDUP"):
+    _wire_object_or_buildup(node_tree, denoise, go, links, nodes, props)
 
   elif render_type == "SHADOW":
-    _wire_shadow(node_tree, rl, go, links, nodes, props, config)
+    _wire_shadow(node_tree, rl, denoise, go, links, nodes, props, config)
 
 
 def _alpha_convert_node():
   return bpy.data.node_groups.get(ALPHA_CONVERT_NAME)
 
 
-def _wire_object_or_buildup(tree, rl, go, links, nodes, props):
+def _wire_object_or_buildup(tree, denoise, go, links, nodes, props):
   bg_rgb = nodes.new("CompositorNodeRGB")
   bg_rgb.name = f"{PREFIX}BackgroundRGB"
   bg_rgb.outputs[0].default_value = props.background_color
@@ -653,7 +925,7 @@ def _wire_object_or_buildup(tree, rl, go, links, nodes, props):
 
   if props.transparent_bg:
     if props.aa_against_bg:
-      links.new(rl.outputs[0], go.inputs[0])
+      links.new(denoise.outputs[0], go.inputs[0])
       scene = bpy.context.scene
       scene.render.film_transparent = True
       scene.render.image_settings.color_mode = "RGBA"
@@ -665,10 +937,10 @@ def _wire_object_or_buildup(tree, rl, go, links, nodes, props):
       ac_node.location = (200, 0)
       ao = nodes.new("CompositorNodeAlphaOver")
       ao.location = (400, 0)
-      ao.inputs[4].default_value = True
-      links.new(rl.outputs[0], ac_node.inputs[0])
-      links.new(ac_node.outputs[0], ao.inputs[1])
-      links.new(bg_rgb.outputs[0], ao.inputs[0])
+      ao.use_premultiply = True
+      links.new(denoise.outputs[0], ac_node.inputs[0])
+      links.new(ac_node.outputs[0], ao.inputs[2])
+      links.new(bg_rgb.outputs[0], ao.inputs[1])
       links.new(ao.outputs[0], go.inputs[0])
       scene = bpy.context.scene
       scene.render.film_transparent = True
@@ -681,16 +953,17 @@ def _wire_object_or_buildup(tree, rl, go, links, nodes, props):
     ac_node.location = (200, 0)
     ao = nodes.new("CompositorNodeAlphaOver")
     ao.location = (400, 0)
-    ao.inputs[4].default_value = True
-    links.new(rl.outputs[0], ac_node.inputs[0])
-    links.new(ac_node.outputs[0], ao.inputs[1])
-    links.new(bg_rgb.outputs[0], ao.inputs[0])
+    ao.use_premultiply = True
+    links.new(denoise.outputs[0], ac_node.inputs[0])
+    links.new(ac_node.outputs[0], ao.inputs[2])
+    links.new(bg_rgb.outputs[0], ao.inputs[1])
     links.new(ao.outputs[0], go.inputs[0])
     scene = bpy.context.scene
+    scene.render.film_transparent = True
     scene.render.image_settings.color_mode = "RGB"
 
 
-def _wire_preview(tree, rl, go, links, nodes, props, config):
+def _wire_preview(tree, rl, denoise, go, links, nodes, props, config):
   bg_rgb = nodes.new("CompositorNodeRGB")
   bg_rgb.name = f"{PREFIX}BackgroundRGB"
   if props.transparent_bg:
@@ -710,34 +983,21 @@ def _wire_preview(tree, rl, go, links, nodes, props, config):
   ac_node.location = (200, 0)
 
   crypto = nodes.new("CompositorNodeCryptomatteV2")
-  crypto.matte_id = f"{PREFIX}Plane.shadow"
+  matte_target = f"{PREFIX}Plane.shadow" if props.engine == "CYCLES" else f"{PREFIX}Plane.holdout"
+  crypto.matte_id = matte_target
   crypto.location = (200, -300)
-
-  threshold = nodes.new("ShaderNodeMath")
-  threshold.operation = "GREATER_THAN"
-  threshold.inputs[1].default_value = 0.72
-  threshold.location = (300, -300)
-
-  mask = nodes.new("ShaderNodeMath")
-  mask.operation = "MULTIPLY"
-  mask.location = (400, -300)
-
-  opacity = nodes.new("ShaderNodeMath")
-  opacity.operation = "MULTIPLY"
-  opacity.inputs[1].default_value = props.shadow_opacity
-  opacity.location = (500, -300)
 
   ao_shadow = nodes.new("CompositorNodeAlphaOver")
   ao_shadow.location = (600, -200)
-  ao_shadow.inputs[4].default_value = True
+  ao_shadow.use_premultiply = True
 
   ao_tint = nodes.new("CompositorNodeAlphaOver")
   ao_tint.location = (700, 0)
-  ao_tint.inputs[4].default_value = True
+  ao_tint.use_premultiply = True
 
   ao = nodes.new("CompositorNodeAlphaOver")
   ao.location = (800, 0)
-  ao.inputs[4].default_value = True
+  ao.use_premultiply = True
 
   bg_input = bg_rgb.outputs[0]
   if props.use_bg_image and props.bg_image_path:
@@ -749,24 +1009,51 @@ def _wire_preview(tree, rl, go, links, nodes, props, config):
       img_node.location = (0, 400)
       bg_input = img_node.outputs[0]
 
-  links.new(rl.outputs[0], ac_node.inputs[0])
-  links.new(rl.outputs[0], crypto.inputs[0])
+  links.new(denoise.outputs[0], ac_node.inputs[0])
 
-  links.new(crypto.outputs[1], threshold.inputs[0])
-  links.new(threshold.outputs[0], mask.inputs[0])
-  links.new(ac_node.outputs[1], mask.inputs[1])
+  opacity = nodes.new("CompositorNodeMath")
+  opacity.name = f"{PREFIX}PreviewOpacity"
+  opacity.operation = "MULTIPLY"
+  opacity.inputs[1].default_value = props.shadow_opacity
+  opacity.location = (500, -300)
+
+  if props.engine == "CYCLES":
+    links.new(rl.outputs[0], crypto.inputs[0])
+
+    threshold = nodes.new("CompositorNodeMath")
+    threshold.operation = "GREATER_THAN"
+    threshold.inputs[1].default_value = 1.4
+    threshold.location = (300, -300)
+
+    mask = nodes.new("CompositorNodeMath")
+    mask.operation = "MULTIPLY"
+    mask.location = (400, -300)
+
+    links.new(crypto.outputs[1], threshold.inputs[0])
+    links.new(threshold.outputs[0], mask.inputs[0])
+    links.new(ac_node.outputs[1], mask.inputs[1])
+  else:
+    links.new(rl.outputs[2], crypto.inputs[0])
+
+    mask = nodes.new("CompositorNodeMath")
+    mask.operation = "MULTIPLY"
+    mask.location = (300, -300)
+
+    links.new(crypto.outputs[1], mask.inputs[0])
+    links.new(ac_node.outputs[1], mask.inputs[1])
+
   links.new(mask.outputs[0], opacity.inputs[0])
 
-  links.new(bg_input, ao_shadow.inputs[0])
-  links.new(shadow_rgb.outputs[0], ao_shadow.inputs[1])
-  links.new(opacity.outputs[0], ao_shadow.inputs[2])
+  links.new(opacity.outputs[0], ao_shadow.inputs[0])
+  links.new(bg_input, ao_shadow.inputs[1])
+  links.new(shadow_rgb.outputs[0], ao_shadow.inputs[2])
 
-  links.new(ac_node.outputs[0], ao_tint.inputs[0])
-  links.new(ao_shadow.outputs[0], ao_tint.inputs[1])
-  links.new(mask.outputs[0], ao_tint.inputs[2])
+  links.new(mask.outputs[0], ao_tint.inputs[0])
+  links.new(ac_node.outputs[0], ao_tint.inputs[1])
+  links.new(ao_shadow.outputs[0], ao_tint.inputs[2])
 
-  links.new(ao_tint.outputs[0], ao.inputs[1])
-  links.new(bg_input, ao.inputs[0])
+  links.new(bg_input, ao.inputs[1])
+  links.new(ao_tint.outputs[0], ao.inputs[2])
   links.new(ao.outputs[0], go.inputs[0])
 
   scene = bpy.context.scene
@@ -778,7 +1065,7 @@ def _wire_preview(tree, rl, go, links, nodes, props, config):
     scene.render.image_settings.color_mode = "RGB"
 
 
-def _wire_shadow(tree, rl, go, links, nodes, props, config):
+def _wire_shadow(tree, rl, denoise, go, links, nodes, props, config):
   bg_rgb = nodes.new("CompositorNodeRGB")
   bg_rgb.name = f"{PREFIX}BackgroundRGB"
   if props.transparent_bg:
@@ -792,26 +1079,23 @@ def _wire_shadow(tree, rl, go, links, nodes, props, config):
   crypto.matte_id = matte_target
   crypto.location = (200, 0)
 
-  sep = nodes.new("CompositorNodeSeparateColor")
-  sep.mode = "HSV"
+  sep = nodes.new("CompositorNodeSepHSVA")
   sep.location = (400, 0)
 
   invert = nodes.new("CompositorNodeInvert")
   invert.location = (600, 0)
 
-  screen = nodes.new("ShaderNodeMix")
-  screen.data_type = "RGBA"
+  screen = nodes.new("CompositorNodeMixRGB")
   screen.blend_type = "SCREEN"
   screen.inputs[0].default_value = 1
   screen.location = (800, 0)
 
-  multiply = nodes.new("ShaderNodeMix")
-  multiply.data_type = "RGBA"
+  multiply = nodes.new("CompositorNodeMixRGB")
   multiply.blend_type = "MULTIPLY"
   multiply.inputs[0].default_value = 1
   multiply.location = (1000, 0)
 
-  cr = nodes.new("ShaderNodeValToRGB")
+  cr = nodes.new("CompositorNodeValToRGB")
   cr.location = (1200, 0)
   cr.color_ramp.elements[0].position = config.colorramp_position01
   cr.color_ramp.elements[0].color = (props.shadow_color[0], props.shadow_color[1], props.shadow_color[2], 0)
@@ -820,7 +1104,7 @@ def _wire_shadow(tree, rl, go, links, nodes, props, config):
 
   ao = nodes.new("CompositorNodeAlphaOver")
   ao.location = (1400, 0)
-  ao.inputs[4].default_value = True
+  ao.use_premultiply = True
 
   ac = _alpha_convert_node()
   ac_node = nodes.new("CompositorNodeGroup")
@@ -830,14 +1114,14 @@ def _wire_shadow(tree, rl, go, links, nodes, props, config):
   links.new(rl.outputs[2], crypto.inputs[0])
   links.new(crypto.outputs[2], sep.inputs[0])
   links.new(sep.outputs[1], invert.inputs[0])
-  links.new(crypto.outputs[1], screen.inputs[6])
-  links.new(invert.outputs[0], screen.inputs[7])
-  links.new(screen.outputs[2], multiply.inputs[7])
-  links.new(rl.outputs[0], ac_node.inputs[0])
-  links.new(ac_node.outputs[1], multiply.inputs[6])
-  links.new(multiply.outputs[2], cr.inputs[0])
-  links.new(bg_rgb.outputs[0], ao.inputs[0])
-  links.new(cr.outputs[0], ao.inputs[1])
+  links.new(crypto.outputs[1], screen.inputs[1])
+  links.new(invert.outputs[0], screen.inputs[2])
+  links.new(screen.outputs[0], multiply.inputs[2])
+  links.new(denoise.outputs[0], ac_node.inputs[0])
+  links.new(ac_node.outputs[1], multiply.inputs[1])
+  links.new(multiply.outputs[0], cr.inputs[0])
+  links.new(bg_rgb.outputs[0], ao.inputs[1])
+  links.new(cr.outputs[0], ao.inputs[2])
   links.new(ao.outputs[0], go.inputs[0])
 
   scene = bpy.context.scene
@@ -877,11 +1161,21 @@ def apply_render_settings(context, props):
     scene.cycles.sample_clamp_indirect = 0.05
     scene.cycles.transmission_bounces = 8
     scene.cycles.volume_bounces = 1
-    scene.cycles.use_denoising = True
-    scene.cycles.denoising_use_gpu = True
+    scene.cycles.use_denoising = props.denoise_render
+    if props.denoise_render:
+      scene.cycles.denoiser = "OPENIMAGEDENOISE"
+      scene.cycles.denoising_prefilter = "NONE"
   else:
-    scene.render.filter_size = 0.7
-    scene.eevee.use_shadows = True
+    scene.render.filter_size = 0.8
+    scene.eevee.gtao_factor = 0.5
+    scene.eevee.gtao_distance = 100
+    scene.eevee.shadow_cascade_size = "1024"
+    scene.eevee.shadow_cube_size = "1024"
+    scene.eevee.taa_render_samples = 64
+    scene.eevee.taa_samples = 8
+    scene.eevee.use_gtao = True
+    scene.eevee.use_soft_shadows = True
+    scene.eevee.use_ssr = True
 
   if props.render_type == "SHADOW":
     scene.render.use_single_layer = False
@@ -894,27 +1188,16 @@ def apply_render_settings(context, props):
   vl.use_pass_cryptomatte_asset = True
   vl.pass_cryptomatte_depth = 2
 
-  for workspace in bpy.data.workspaces:
-    for screen in workspace.screens:
-      for area in screen.areas:
-        if area.type == "VIEW_3D":
-          for space in area.spaces:
-            if space.type == "VIEW_3D":
-              space.shading.use_scene_lights = True
-              space.shading.use_scene_world = True
-
 
 # ──────────────────────────────────────────────
 # Apply render type visibility
 # ──────────────────────────────────────────────
-# Visibility dicts: 1 = hide_render=True (hidden), 0 = hide_render=False (visible)
-# Order: holdout, holdout2, shadow, shadow2, blue, grey, ambient
 RENDER_TYPE_VIS = {
-  "DEFAULT":   {"holdout": 1, "holdout2": 1, "shadow": 1, "shadow2": 1, "blue": 1, "grey": 0, "ambient": 1},
-  "PREVIEW": {"holdout": 0, "holdout2": 1, "shadow": 0, "shadow2": 1, "blue": 1, "grey": 1, "ambient": 1},
-  "OBJECT":  {"holdout": 1, "holdout2": 1, "shadow": 1, "shadow2": 1, "blue": 1, "grey": 1, "ambient": 0},
-  "BUILDUP": {"holdout": 1, "holdout2": 0, "shadow": 1, "shadow2": 1, "blue": 1, "grey": 1, "ambient": 1},
-  "SHADOW":  {"holdout": 0, "holdout2": 1, "shadow": 0, "shadow2": 1, "blue": 1, "grey": 1, "ambient": 1},
+  "DEFAULT":  {"holdout": 1, "holdout2": 1, "shadow": 1, "shadow2": 1, "blue": 1, "grey": 0, "ambient": 1},
+  "PREVIEW":  {"holdout": 0, "holdout2": 1, "shadow": 0, "shadow2": 1, "blue": 1, "grey": 1, "ambient": 1},
+  "OBJECT":   {"holdout": 1, "holdout2": 1, "shadow": 1, "shadow2": 1, "blue": 1, "grey": 1, "ambient": 0},
+  "BUILDUP":  {"holdout": 1, "holdout2": 0, "shadow": 1, "shadow2": 1, "blue": 1, "grey": 1, "ambient": 1},
+  "SHADOW":   {"holdout": 0, "holdout2": 1, "shadow": 0, "shadow2": 1, "blue": 1, "grey": 1, "ambient": 1},
 }
 
 
@@ -928,11 +1211,38 @@ def apply_render_type_visibility(context):
       obj.hide_render = hide_val
 
   vll = context.view_layer.layer_collection
-  for child in vll.children[f"{COLLECTION_NAME}"].children:
+  for child in vll.children[COLLECTION_NAME].children:
     if child.name == f"{COLLECTION_NAME} Holdout":
       child.exclude = bool(vis.get("holdout", 1))
       break
 
   sun = bpy.data.objects.get(f"{PREFIX}Sun")
   if sun:
-    sun.hide_render = True if props.engine == "CYCLES" else False
+    sun.hide_render = props.engine == "CYCLES" or (props.engine == "EEVEE" and props.render_type == "SHADOW")
+
+  sun_shadow = bpy.data.objects.get(f"{PREFIX}Sun.shadow")
+  if sun_shadow:
+    sun_shadow.hide_render = not (props.engine == "EEVEE" and props.render_type == "SHADOW")
+
+
+def update_render_type_visibility(context):
+    apply_render_type_visibility(context)
+
+
+def update_scene_params(context):
+  props = context.scene.cc_toolkit
+  tree = context.scene.node_tree
+  if not tree:
+    return
+  bg = tree.nodes.get(f"{PREFIX}BackgroundRGB")
+  if bg:
+    if props.transparent_bg:
+      bg.outputs[0].default_value = (0, 0, 0, 0)
+    else:
+      bg.outputs[0].default_value = props.background_color
+  sh = tree.nodes.get(f"{PREFIX}ShadowRGB")
+  if sh:
+    sh.outputs[0].default_value = props.shadow_color
+  op = tree.nodes.get(f"{PREFIX}PreviewOpacity")
+  if op:
+    op.inputs[1].default_value = props.shadow_opacity

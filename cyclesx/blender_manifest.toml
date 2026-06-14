@@ -1,0 +1,13 @@
+schema_version = "1.0.0"
+
+id = "blender_cnc_toolkit_cyclesx"
+version = "0.1.0"
+name = "Blender C&C Toolkit (CyclesX)"
+tagline = "All-in-one toolkit to render C&C assets."
+maintainer = "Zawaro <zawaroarts@gmail.com>"
+type = "add-on"
+license = [
+  "SPDX:GPL-3.0-or-later",
+]
+
+blender_version_min = "3.0.0"

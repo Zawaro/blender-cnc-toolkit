@@ -1,0 +1,6 @@
+[project]
+name = "blender-cnc-toolkit"
+version = "0.1.0"
+
+[tool.ruff]
+indent-width = 2
