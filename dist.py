@@ -19,7 +19,10 @@ TOOLKITS = {
 }
 
 EXCLUDE_DIRS = {".venv", "__pycache__", ".git", "docs"}
-EXCLUDE_FILES = {"zip_hi_five.py", "zip_eevee_next.py", "_build.py"}
+EXCLUDE_FILES = {"zip_hi_five.py", "zip_eevee_next.py"}
+TOOLKIT_EXCLUDE_FILES = {
+  "cyclesx": {"blender_manifest.toml"},
+}
 
 
 def get_build_number():
@@ -57,6 +60,8 @@ def zip_addon(name, addon_dir, build_number):
   with open(build_file, "w") as f:
     f.write(f'BUILD_NUMBER = "{build_number}"\n')
 
+  exclude = EXCLUDE_FILES | TOOLKIT_EXCLUDE_FILES.get(name, set())
+
   try:
     with zipfile.ZipFile(zip_path, "w", zipfile.ZIP_DEFLATED) as zipf:
       for foldername, dirnames, filenames in os.walk(addon_dir):
@@ -65,7 +70,7 @@ def zip_addon(name, addon_dir, build_number):
           if d not in EXCLUDE_DIRS and not d.startswith(".")
         ]
         for filename in filenames:
-          if filename in EXCLUDE_FILES:
+          if filename in exclude:
             continue
           file_path = os.path.join(foldername, filename)
           arcname = os.path.relpath(file_path, addon_dir)

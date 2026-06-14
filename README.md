@@ -4,17 +4,13 @@ An interactive Blender addon for generating template scenes used to render Comma
 
 ## Addons
 
-### HiFive (Blender 5.0+)
+| Blender | Folder | Notes |
+|---------|--------|-------|
+| 5.0+ | `hi_five` | Latest stable release |
+| 4.2–4.x | `eevee_next` | Eevee Next engine |
+| 3.0–3.6 | `cyclesx` | Cycles X engine |
 
-Full template scene generation with reactive rebuild. Operates from the 3D Viewport sidebar and mutates the active scene in-place. Supports all render types including Shadow with auto-calculated frame offsets for contiguous output.
-
-### Eevee Next (Blender 4.2+)
-
-Same feature set as HiFive, targeting Blender's EEVEE_NEXT engine. Provides the same workflow for users on Blender 4.2–4.x.
-
-### CyclesX (Blender 3.0+)
-
-Targets Blender 3.0's CyclesX engine. Includes engine-specific Cryptomatte handling, holdout plane occlusion fixes, and dedicated Denoise options panel.
+All three addons share the same feature set and UI. They differ only in Blender version compatibility and render engine support.
 
 ## Features
 
