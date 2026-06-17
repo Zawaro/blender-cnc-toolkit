@@ -889,7 +889,7 @@ def apply_render_settings(context, props):
     if props.engine == "CYCLES":
       scene.cycles.filter_width = 0.01
 
-  vl = scene.view_layers["ViewLayer"]
+  vl = context.view_layer
   vl.cycles.denoising_store_passes = True
   vl.use_pass_cryptomatte_asset = True
   vl.pass_cryptomatte_depth = 2
