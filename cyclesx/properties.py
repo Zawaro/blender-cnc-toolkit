@@ -203,3 +203,21 @@ class CncToolkitProperties(bpy.types.PropertyGroup):
     description="JSON snapshot of pre-template scene state for purge restoration",
     default="",
   )
+
+  saved_filter_size: bpy.props.FloatProperty(
+    name="Saved Filter Size",
+    description="Stored filter size before SHADOW override",
+    default=0.0,
+  )
+
+  saved_filter_width: bpy.props.FloatProperty(
+    name="Saved Filter Width",
+    description="Stored Cycles filter width before SHADOW override",
+    default=0.9,
+  )
+
+  is_shadow_filter_saved: bpy.props.BoolProperty(
+    name="Shadow Filter Saved",
+    description="Whether filter values have been saved before SHADOW override",
+    default=False,
+  )
