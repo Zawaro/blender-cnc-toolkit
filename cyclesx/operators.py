@@ -15,6 +15,7 @@ class CNC_OT_generate_template(bpy.types.Operator):
     props = context.scene.cc_toolkit
     if not props.template_generated:
       scene_builder.save_scene_state(context)
+      scene_builder.apply_initial_settings(context, props)
     scene_builder.rebuild_all(context)
     props.template_generated = True
     return {"FINISHED"}

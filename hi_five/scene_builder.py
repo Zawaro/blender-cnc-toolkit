@@ -124,6 +124,8 @@ def save_scene_state(context):
     "frame_end": scene.frame_end,
     "world": scene.world.name if scene.world else "",
     "compositor": scene.compositing_node_group.name if scene.compositing_node_group else "",
+    "filter_size": scene.render.filter_size,
+    "filter_width": scene.cycles.filter_width if scene.render.engine == "CYCLES" else 0.0,
   }
   context.scene.cc_toolkit.saved_state = json.dumps(state)
 
@@ -147,6 +149,9 @@ def restore_scene_state(context):
     scene.world = bpy.data.worlds[state["world"]]
   if state["compositor"] and state["compositor"] in bpy.data.node_groups:
     scene.compositing_node_group = bpy.data.node_groups[state["compositor"]]
+  scene.render.filter_size = state["filter_size"]
+  if state["engine"] == "CYCLES":
+    scene.cycles.filter_width = state["filter_width"]
 
 
 # ──────────────────────────────────────────────
@@ -848,22 +853,20 @@ def _wire_shadow(tree, rl, go, links, nodes, props, config):
 # ──────────────────────────────────────────────
 # Render settings
 # ──────────────────────────────────────────────
-def apply_render_settings(context, props):
+def apply_initial_settings(context, props):
   config = get_config(props.game, props.variant)
   scene = context.scene
   scene.frame_start = 0
   scene.frame_end = 11
   scene.render.fps = 10
   scene.render.dither_intensity = 0
-  scene.render.resolution_x = config.resolution[0]
-  scene.render.resolution_y = config.resolution[1]
   scene.render.image_settings.compression = 90
   scene.render.image_settings.file_format = "PNG"
-  scene.render.use_single_layer = True
   scene.unit_settings.system = "NONE"
   scene.view_settings.view_transform = "Standard"
   scene.view_settings.look = "None"
   scene.view_settings.exposure = 0
+  props.is_shadow_filter_saved = False
 
   if props.engine == "CYCLES":
     scene.render.filter_size = 0.0
@@ -883,12 +886,6 @@ def apply_render_settings(context, props):
     scene.render.filter_size = 0.7
     scene.eevee.use_shadows = True
 
-  if props.render_type == "SHADOW":
-    scene.render.use_single_layer = False
-    scene.render.filter_size = 0.01
-    if props.engine == "CYCLES":
-      scene.cycles.filter_width = 0.01
-
   vl = context.view_layer
   vl.cycles.denoising_store_passes = True
   vl.use_pass_cryptomatte_asset = True
@@ -902,6 +899,30 @@ def apply_render_settings(context, props):
             if space.type == "VIEW_3D":
               space.shading.use_scene_lights = True
               space.shading.use_scene_world = True
+
+
+def apply_render_settings(context, props):
+  config = get_config(props.game, props.variant)
+  scene = context.scene
+  scene.render.resolution_x = config.resolution[0]
+  scene.render.resolution_y = config.resolution[1]
+  scene.render.use_single_layer = True
+
+  if props.render_type == "SHADOW":
+    if not props.is_shadow_filter_saved:
+      props.saved_filter_size = scene.render.filter_size
+      props.saved_filter_width = scene.cycles.filter_width if props.engine == "CYCLES" else 0.0
+      props.is_shadow_filter_saved = True
+    scene.render.use_single_layer = False
+    scene.render.filter_size = 0.01
+    if props.engine == "CYCLES":
+      scene.cycles.filter_width = 0.01
+  else:
+    if props.is_shadow_filter_saved:
+      scene.render.filter_size = props.saved_filter_size
+      if props.engine == "CYCLES":
+        scene.cycles.filter_width = props.saved_filter_width
+      props.is_shadow_filter_saved = False
 
 
 # ──────────────────────────────────────────────
