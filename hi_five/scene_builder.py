@@ -249,22 +249,20 @@ def create_camera(context, props):
     cam_type = config.camera_type
     ortho_scale = config.camera_ortho_scale
 
-  bpy.ops.object.camera_add(
-    enter_editmode=False, align="VIEW",
-    location=location, rotation=rotation,
-  )
-  cam = context.active_object
-  cam.name = f"{PREFIX}Camera"
-  cam.data.name = f"{PREFIX}Camera"
-  cam.hide_viewport = True
-  cam.data.type = cam_type
+  cam_data = bpy.data.cameras.new(f"{PREFIX}Camera")
+  cam_obj = bpy.data.objects.new(f"{PREFIX}Camera", cam_data)
+  bpy.data.collections[COLLECTION_NAME].objects.link(cam_obj)
+  cam_obj.location = location
+  cam_obj.rotation_euler = rotation
+  cam_obj.hide_viewport = True
+  cam_data.type = cam_type
   if cam_type == "PERSP":
-    cam.data.lens_unit = "FOV"
-    cam.data.angle = 1.0472
+    cam_data.lens_unit = "FOV"
+    cam_data.angle = 1.0472
   else:
-    cam.data.ortho_scale = ortho_scale
-    cam.data.clip_end = config.camera_clip_end
-  context.scene.camera = cam
+    cam_data.ortho_scale = ortho_scale
+    cam_data.clip_end = config.camera_clip_end
+  context.scene.camera = cam_obj
   _set_camera_view(context)
 
 
