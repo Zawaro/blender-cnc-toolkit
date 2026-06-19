@@ -715,7 +715,7 @@ def _wire_object_or_buildup(tree, rl, go, links, nodes, props):
     links.new(bg_rgb.outputs[0], ao.inputs[1])
     links.new(ao.outputs[0], go.inputs[0])
     scene = bpy.context.scene
-    scene.render.film_transparent = False
+    scene.render.film_transparent = True
     scene.render.image_settings.color_mode = "RGB"
 
 
