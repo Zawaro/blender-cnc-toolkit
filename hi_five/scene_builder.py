@@ -944,10 +944,10 @@ def apply_initial_settings(context, props):
   scene.view_settings.exposure = 0
   props.is_shadow_filter_saved = False
 
+  scene.render.filter_size = 0.7
+
   if props.engine == "CYCLES":
-    scene.render.filter_size = 0.0
-    scene.cycles.device = "GPU"
-    scene.cycles.filter_width = config.cycles_filter_width
+    scene.cycles.filter_width = 0.8
     scene.cycles.max_bounces = config.cycles_max_bounces
     scene.cycles.pixel_filter_type = "BLACKMAN_HARRIS"
     scene.cycles.preview_samples = config.cycles_preview_samples
@@ -959,7 +959,6 @@ def apply_initial_settings(context, props):
     scene.cycles.use_denoising = True
     scene.cycles.denoising_use_gpu = True
   else:
-    scene.render.filter_size = 0.7
     scene.eevee.use_shadows = True
 
   vl = context.view_layer
