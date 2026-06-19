@@ -60,6 +60,10 @@ def _update_params(instance, context):
   scene_builder.update_scene_params(context)
 
 
+class RemapMaterialItem(bpy.types.PropertyGroup):
+  material: bpy.props.PointerProperty(type=bpy.types.Material)
+
+
 class CncToolkitProperties(bpy.types.PropertyGroup):
   game: bpy.props.EnumProperty(
     name="Game",
@@ -220,4 +224,25 @@ class CncToolkitProperties(bpy.types.PropertyGroup):
     name="Shadow Filter Saved",
     description="Whether filter values have been saved before SHADOW override",
     default=False,
+  )
+
+  remap_material_picker: bpy.props.PointerProperty(
+    name="Remap Material",
+    description="Material to add to the remap list",
+    type=bpy.types.Material,
+  )
+
+  remap_materials: bpy.props.CollectionProperty(
+    type=RemapMaterialItem,
+  )
+
+  remap_color: bpy.props.FloatVectorProperty(
+    name="Remap Color",
+    description="Target HUE color for the remapped material",
+    subtype="COLOR",
+    size=4,
+    default=(1, 0, 0, 1),
+    min=0.0,
+    max=1.0,
+    update=_rebuild_if_generated,
   )

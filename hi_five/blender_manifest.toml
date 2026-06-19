@@ -1,7 +1,7 @@
 schema_version = "1.0.0"
 
 id = "blender_cnc_toolkit_hi_five"
-version = "0.2.0"
+version = "0.2.1"
 name = "Blender C&C Toolkit (HiFive)"
 tagline = "All-in-one toolkit to render C&C assets."
 maintainer = "Zawaro <zawaroarts@gmail.com>"

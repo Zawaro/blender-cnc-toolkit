@@ -55,6 +55,23 @@ class VIEW3D_PT_cc_toolkit(bpy.types.Panel):
       layout.prop(props, "shadow_opacity")
     layout.separator()
 
+    layout.label(text="Remap Materials")
+    row = layout.row()
+    row.prop(props, "remap_material_picker", text="")
+    row.operator("ccnc.add_remap_material", text="Add", icon="ADD")
+
+    for i, item in enumerate(props.remap_materials):
+      row = layout.row()
+      row.prop(item, "material", text="")
+      op = row.operator("ccnc.remove_remap_material", text="", icon="X")
+      op.index = i
+
+    if props.remap_materials:
+      layout.operator("ccnc.clear_remap_materials", text="Clear All", icon="X")
+      layout.prop(props, "remap_color")
+
+    layout.separator()
+
     if props.render_type == "PREVIEW":
       box = layout.box()
       box.prop(props, "use_bg_image")
