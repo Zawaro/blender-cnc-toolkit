@@ -75,9 +75,19 @@ class RENDER_PT_crop_canvas_format(bpy.types.Panel):
       row.prop(crop, "y_int")
 
 
+_monitor_running = False
+
+
 def crop_canvas_monitor(scene):
-  crop = scene.cc_crop_canvas
-  render = scene.render
-  if crop.use_crop_canvas:
-    if not render.use_border or not render.use_crop_to_border:
-      crop.use_crop_canvas = False
+  global _monitor_running
+  if _monitor_running:
+    return
+  _monitor_running = True
+  try:
+    crop = scene.cc_crop_canvas
+    render = scene.render
+    if crop.use_crop_canvas:
+      if not render.use_border or not render.use_crop_to_border:
+        crop.use_crop_canvas = False
+  finally:
+    _monitor_running = False
