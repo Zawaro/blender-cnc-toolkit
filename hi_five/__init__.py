@@ -1,7 +1,7 @@
 bl_info = {
   "name": "Blender C&C Toolkit (HiFive)",
   "author": "Zawaro",
-  "version": (0, 2, 0),
+  "version": (0, 2, 1),
   "blender": (5, 0, 0),
   "location": "View3D > Sidebar > C&C Toolkit",
   "description": "All-in-one toolkit to render C&C assets.",
@@ -24,7 +24,7 @@ from bpy.utils import register_class
 from bpy.props import PointerProperty
 from bpy.utils import unregister_class
 
-from .properties import CncToolkitProperties
+from .properties import CncToolkitProperties, RemapMaterialItem
 from .panel import VIEW3D_PT_cc_toolkit, VIEW3D_PT_cc_toolkit_crop_canvas
 from .operators import (
   CNC_OT_generate_template,
@@ -32,6 +32,9 @@ from .operators import (
   CNC_OT_render,
   CNC_OT_render_shadow,
   CNC_OT_cancel_render,
+  CNC_OT_add_remap_material,
+  CNC_OT_remove_remap_material,
+  CNC_OT_clear_remap_materials,
 )
 from .crop_canvas import (
   RENDER_PT_crop_canvas_format,
@@ -41,6 +44,7 @@ from .crop_canvas import (
 
 classes = (
   CropCanvasProperties,
+  RemapMaterialItem,
   CncToolkitProperties,
   RENDER_PT_crop_canvas_format,
   VIEW3D_PT_cc_toolkit,
@@ -50,6 +54,9 @@ classes = (
   CNC_OT_render,
   CNC_OT_render_shadow,
   CNC_OT_cancel_render,
+  CNC_OT_add_remap_material,
+  CNC_OT_remove_remap_material,
+  CNC_OT_clear_remap_materials,
 )
 
 

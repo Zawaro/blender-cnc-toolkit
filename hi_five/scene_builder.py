@@ -196,10 +196,20 @@ def _delete_collection(coll):
 # ──────────────────────────────────────────────
 def rebuild_all(context):
   props = context.scene.cc_toolkit
+  scene = context.scene
+  saved_compositing = scene.render.use_compositing
+  scene.render.use_compositing = False
+  target_engine = ENGINE_MAP[props.engine]
+  if scene.render.engine != target_engine:
+    scene.render.engine = target_engine
   clear_template(context)
 
-  scene = context.scene
-  scene.render.engine = ENGINE_MAP[props.engine]
+  vl = context.view_layer
+  if props.remap_materials:
+    vl.use_pass_cryptomatte_material = True
+    vl.pass_cryptomatte_depth = max(vl.pass_cryptomatte_depth, 2)
+  else:
+    vl.use_pass_cryptomatte_material = False
 
   create_collections(context)
   create_camera(context, props)
@@ -216,6 +226,8 @@ def rebuild_all(context):
   crop = context.scene.cc_crop_canvas
   if crop.use_crop_canvas:
     crop.update_resolution(context)
+
+  scene.render.use_compositing = saved_compositing
 
 
 # ──────────────────────────────────────────────
@@ -614,7 +626,6 @@ def create_compositor(context, props):
   config = get_config(props.game, props.variant)
 
   node_tree = bpy.data.node_groups.new(name=COMP_TREE_NAME, type="CompositorNodeTree")
-  scene.compositing_node_group = node_tree
   nodes = node_tree.nodes
   links = node_tree.links
 
@@ -628,27 +639,73 @@ def create_compositor(context, props):
 
   if render_type == "DEFAULT":
     scene.render.film_transparent = False
-    links.new(rl.outputs[0], go.inputs[0])
+    hue_mix = _create_remap_hue(context, nodes, links, rl, go, props) if props.remap_materials else None
+    if hue_mix:
+      links.new(rl.outputs[0], hue_mix.inputs['A'])
+      links.new(hue_mix.outputs['Result'], go.inputs[0])
+    else:
+      links.new(rl.outputs[0], go.inputs[0])
     scene.render.image_settings.color_mode = "RGB"
 
   elif render_type == "PREVIEW":
-    _wire_preview(node_tree, rl, go, links, nodes, props, config)
+    _wire_preview(context, node_tree, rl, go, links, nodes, props, config)
 
   elif render_type == "OBJECT":
-    _wire_object_or_buildup(node_tree, rl, go, links, nodes, props)
+    _wire_object_or_buildup(context, node_tree, rl, go, links, nodes, props)
 
   elif render_type == "BUILDUP":
-    _wire_object_or_buildup(node_tree, rl, go, links, nodes, props)
+    _wire_object_or_buildup(context, node_tree, rl, go, links, nodes, props)
 
   elif render_type == "SHADOW":
     _wire_shadow(node_tree, rl, go, links, nodes, props, config)
+
+  scene.compositing_node_group = node_tree
+
+
+def _create_remap_hue(context, nodes, links, rl_node, go, props):
+  mat_names = [item.material.name for item in props.remap_materials if item.material]
+  if not mat_names:
+    return None
+
+  crypto = nodes.new("CompositorNodeCryptomatteV2")
+  layer_items = crypto.bl_rna.properties['layer_name'].enum_items
+  material_layer = next((item.identifier for item in layer_items if 'Material' in item.identifier), None)
+  if material_layer:
+    if '.' not in material_layer:
+      material_layer = context.view_layer.name + '.' + material_layer
+    crypto.layer_name = material_layer
+  crypto.matte_id = ",".join(mat_names)
+  crypto.location = (go.location.x - 300, go.location.y - 100)
+
+  if rl_node:
+    links.new(rl_node.outputs[0], crypto.inputs[0])
+    crypto_outputs = [o for o in rl_node.outputs if 'Crypto' in o.name]
+    max_crypto = min(len(crypto_outputs), len(crypto.inputs) - 1)
+    for i in range(max_crypto):
+      links.new(crypto_outputs[i], crypto.inputs[i + 1])
+
+  threshold = nodes.new("ShaderNodeMath")
+  threshold.operation = "GREATER_THAN"
+  threshold.inputs[1].default_value = 0.01
+  threshold.location = (go.location.x - 200, go.location.y - 100)
+
+  hue_mix = nodes.new("ShaderNodeMix")
+  hue_mix.data_type = "RGBA"
+  hue_mix.blend_type = "COLOR"
+  hue_mix.location = (go.location.x - 100, go.location.y - 100)
+
+  links.new(crypto.outputs[1], threshold.inputs[0])
+  links.new(threshold.outputs[0], hue_mix.inputs[0])
+  hue_mix.inputs['B'].default_value = props.remap_color
+
+  return hue_mix
 
 
 def _alpha_convert_node():
   return bpy.data.node_groups.get(ALPHA_CONVERT_NAME)
 
 
-def _wire_object_or_buildup(tree, rl, go, links, nodes, props):
+def _wire_object_or_buildup(context, tree, rl, go, links, nodes, props):
   bg_rgb = nodes.new("CompositorNodeRGB")
   bg_rgb.name = f"{PREFIX}BackgroundRGB"
   bg_rgb.outputs[0].default_value = props.background_color
@@ -656,7 +713,12 @@ def _wire_object_or_buildup(tree, rl, go, links, nodes, props):
 
   if props.transparent_bg:
     if props.aa_against_bg:
-      links.new(rl.outputs[0], go.inputs[0])
+      hue_mix = _create_remap_hue(context, nodes, links, rl, go, props) if props.remap_materials else None
+      if hue_mix:
+        links.new(rl.outputs[0], hue_mix.inputs['A'])
+        links.new(hue_mix.outputs['Result'], go.inputs[0])
+      else:
+        links.new(rl.outputs[0], go.inputs[0])
       scene = bpy.context.scene
       scene.render.film_transparent = True
       scene.render.image_settings.color_mode = "RGBA"
@@ -670,7 +732,12 @@ def _wire_object_or_buildup(tree, rl, go, links, nodes, props):
       ao.location = (400, 0)
       ao.inputs[4].default_value = True
       links.new(rl.outputs[0], ac_node.inputs[0])
-      links.new(ac_node.outputs[0], ao.inputs[1])
+      hue_mix = _create_remap_hue(context, nodes, links, rl, go, props) if props.remap_materials else None
+      if hue_mix:
+        links.new(ac_node.outputs[0], hue_mix.inputs['A'])
+        links.new(hue_mix.outputs['Result'], ao.inputs[1])
+      else:
+        links.new(ac_node.outputs[0], ao.inputs[1])
       links.new(bg_rgb.outputs[0], ao.inputs[0])
       links.new(ao.outputs[0], go.inputs[0])
       scene = bpy.context.scene
@@ -686,7 +753,12 @@ def _wire_object_or_buildup(tree, rl, go, links, nodes, props):
     ao.location = (400, 0)
     ao.inputs[4].default_value = True
     links.new(rl.outputs[0], ac_node.inputs[0])
-    links.new(ac_node.outputs[0], ao.inputs[1])
+    hue_mix = _create_remap_hue(context, nodes, links, rl, go, props) if props.remap_materials else None
+    if hue_mix:
+      links.new(ac_node.outputs[0], hue_mix.inputs['A'])
+      links.new(hue_mix.outputs['Result'], ao.inputs[1])
+    else:
+      links.new(ac_node.outputs[0], ao.inputs[1])
     links.new(bg_rgb.outputs[0], ao.inputs[0])
     links.new(ao.outputs[0], go.inputs[0])
     scene = bpy.context.scene
@@ -694,7 +766,7 @@ def _wire_object_or_buildup(tree, rl, go, links, nodes, props):
     scene.render.image_settings.color_mode = "RGB"
 
 
-def _wire_preview(tree, rl, go, links, nodes, props, config):
+def _wire_preview(context, tree, rl, go, links, nodes, props, config):
   bg_rgb = nodes.new("CompositorNodeRGB")
   bg_rgb.name = f"{PREFIX}BackgroundRGB"
   if props.transparent_bg:
@@ -765,7 +837,12 @@ def _wire_preview(tree, rl, go, links, nodes, props, config):
   links.new(shadow_rgb.outputs[0], ao_shadow.inputs[1])
   links.new(opacity.outputs[0], ao_shadow.inputs[2])
 
-  links.new(ac_node.outputs[0], ao_tint.inputs[0])
+  hue_mix = _create_remap_hue(context, nodes, links, rl, go, props) if props.remap_materials else None
+  if hue_mix:
+    links.new(ac_node.outputs[0], hue_mix.inputs['A'])
+    links.new(hue_mix.outputs['Result'], ao_tint.inputs[0])
+  else:
+    links.new(ac_node.outputs[0], ao_tint.inputs[0])
   links.new(ao_shadow.outputs[0], ao_tint.inputs[1])
   links.new(mask.outputs[0], ao_tint.inputs[2])
 

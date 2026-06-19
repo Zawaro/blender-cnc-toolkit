@@ -152,3 +152,55 @@ class CNC_OT_cancel_render(bpy.types.Operator):
       if area.type == "VIEW_3D":
         area.tag_redraw()
     return {"FINISHED"}
+
+
+class CNC_OT_add_remap_material(bpy.types.Operator):
+  bl_idname = "ccnc.add_remap_material"
+  bl_label = "Add Remap Material"
+  bl_description = "Add the selected material to the remap list"
+
+  def execute(self, context):
+    props = context.scene.cc_toolkit
+    for i in range(len(props.remap_materials) - 1, -1, -1):
+      if not props.remap_materials[i].material:
+        props.remap_materials.remove(i)
+    if props.remap_material_picker:
+      if any(item.material == props.remap_material_picker for item in props.remap_materials):
+        self.report({"WARNING"}, "Material already in list")
+        return {"CANCELLED"}
+      item = props.remap_materials.add()
+      item.material = props.remap_material_picker
+      props.remap_material_picker = None
+      if props.template_generated:
+        scene_builder.rebuild_all(context)
+    return {"FINISHED"}
+
+
+class CNC_OT_remove_remap_material(bpy.types.Operator):
+  bl_idname = "ccnc.remove_remap_material"
+  bl_label = "Remove Remap Material"
+  bl_description = "Remove a material from the remap list"
+
+  index: bpy.props.IntProperty()
+
+  def execute(self, context):
+    props = context.scene.cc_toolkit
+    if 0 <= self.index < len(props.remap_materials):
+      props.remap_materials.remove(self.index)
+      if props.template_generated:
+        scene_builder.rebuild_all(context)
+    return {"FINISHED"}
+
+
+class CNC_OT_clear_remap_materials(bpy.types.Operator):
+  bl_idname = "ccnc.clear_remap_materials"
+  bl_label = "Clear Remap Materials"
+  bl_description = "Remove all materials from the remap list"
+
+  def execute(self, context):
+    props = context.scene.cc_toolkit
+    if props.remap_materials:
+      props.remap_materials.clear()
+      if props.template_generated:
+        scene_builder.rebuild_all(context)
+    return {"FINISHED"}
