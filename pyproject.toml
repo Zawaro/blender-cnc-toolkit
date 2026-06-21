@@ -1,6 +1,15 @@
 [project]
 name = "blender-cnc-toolkit"
-version = "0.1.0"
+version = "0.2.2"
+requires-python = ">=3.11"
+
+[dependency-groups]
+test = ["pytest", "pytest-blender"]
+dev = ["pre-commit", "ruff"]
 
 [tool.ruff]
 indent-width = 2
+exclude = ["hi_five", "eevee_next", "cyclesx", "dist.py"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

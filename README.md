@@ -76,6 +76,48 @@ This will:
 2. Prompt you to select a toolkit (hi_five, eevee_next, cyclesx, or all)
 3. Output versioned `.zip` files to `.dist/`
 
+## Development
+
+### Setup
+
+```bash
+git clone https://github.com/zawaro/blender-cnc-toolkit.git
+cd blender-cnc-toolkit
+uv sync --group test --group dev
+uv run pre-commit install
+```
+
+### Testing
+
+Tests run inside Blender's headless Python using [pytest-blender](https://github.com/mondeja/pytest-blender):
+
+```bash
+# Single variant
+BLENDER_EXECUTABLE=/path/to/blender ./test.sh
+
+# All variants (set paths in .env first)
+cp .env.example .env   # edit with your Blender paths
+./test.sh --all
+
+# Or run pytest directly
+BLENDER_ADDON=hi_five BLENDER_EXECUTABLE=/path/to/blender uv run pytest --blender-addons-dirs . -v -- -noaudio
+```
+
+`.env` maps addon variants to local Blender executables:
+- `BLENDER_5` → hi_five (Blender 5.0+)
+- `BLENDER_4` → eevee_next (Blender 4.2–4.x)
+- `BLENDER_3` → cyclesx (Blender 3.0–3.6)
+
+Each Blender's Python needs pytest installed: `<blender>/python/bin/python3.XX -m pip install pytest`
+
+### Pre-commit
+
+Pre-commit hooks run ruff linting and formatting on every commit:
+
+```bash
+uv run pre-commit run --all-files
+```
+
 ## License
 
 GPL-3.0-or-later — see [LICENSE](LICENSE) for details.
