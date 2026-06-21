@@ -1,0 +1,63 @@
+name: Tests
+on:
+  pull_request:
+    branches: [main]
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/ruff-action@v3
+
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - blender-version: "5.0.0"
+            addon: hi_five
+          - blender-version: "4.3.2"
+            addon: eevee_next
+          - blender-version: "3.6.23"
+            addon: cyclesx
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Cache Blender
+        uses: actions/cache@v4
+        id: cache-blender
+        with:
+          path: blender-*
+          key: blender-${{ matrix.blender-version }}
+
+      - name: Set Blender path
+        id: blender
+        run: |
+          pip install blender-downloader 2>/dev/null
+          echo "path=$(blender-downloader ${{ matrix.blender-version }} --extract --remove-compressed --print-blender-executable --quiet)" >> $GITHUB_OUTPUT
+
+      - name: Install deps
+        run: |
+          pip install pytest pytest-blender
+          BLENDER="${{ steps.blender.outputs.path }}"
+          PYTHON_BLENDER="$(pytest-blender --blender-executable "$BLENDER")"
+          $PYTHON_BLENDER -m ensurepip
+          $PYTHON_BLENDER -m pip install pytest
+
+      - name: Prepare addon directory
+        run: |
+          mkdir -p _addon
+          cp -r ${{ matrix.addon }} _addon/
+
+      - name: Test
+        run: |
+          pytest --blender-addons-dirs _addon -v -- -noaudio
+        env:
+          BLENDER_EXECUTABLE: ${{ steps.blender.outputs.path }}
+          BLENDER_ADDON: ${{ matrix.addon }}
