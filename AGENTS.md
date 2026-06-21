@@ -41,6 +41,44 @@ python dist.py     # same, but requires activated venv
 - `_build.py` is generated during build (gitignored) and included in zip for version display
 - `blender_manifest.toml` version must match `bl_info` version in `__init__.py`
 
+## Testing
+
+Uses [pytest-blender](https://github.com/mondeja/pytest-blender) for addon testing. Tests run inside Blender's headless Python interpreter.
+
+```sh
+uv sync --group test --group dev          # install all deps
+uv run pre-commit install                 # install pre-commit hooks
+
+# Single variant
+BLENDER_EXECUTABLE=/path/to/blender ./test.sh
+
+# All variants (set paths in .env first)
+cp .env.example .env   # edit with your Blender paths
+./test.sh --all
+
+# Or run pytest directly
+BLENDER_ADDON=hi_five BLENDER_EXECUTABLE=/path/to/blender uv run pytest --blender-addons-dirs . -v -- -noaudio
+```
+
+`.env` maps addon variants to local Blender executables:
+- `BLENDER_5` → hi_five (Blender 5.0+)
+- `BLENDER_4` → eevee_next (Blender 4.2–4.x)
+- `BLENDER_3` → cyclesx (Blender 3.0–3.6)
+
+Each Blender's Python needs pytest installed: `<blender>/python/bin/python3.XX -m pip install pytest`
+
+Test structure:
+- `tests/conftest.py` — shared fixtures (`addon_name`, `addon_module`, `clean_scene`, `scene_with_addon`)
+- `tests/test_config.py` — GAME_CONFIGS, get_config, ENGINE_MAP, RENDER_TYPE_VIS
+- `tests/test_properties.py` — enum item validation, VERSION_STRING, manifest version
+- `tests/test_registration.py` — addon registration, operator/panel existence
+- `tests/test_scene_state.py` — save/restore scene state round-trips
+- `tests/test_visibility.py` — render type visibility per plane/sun
+- `tests/test_render.py` — initial settings, render settings, shadow filter save/restore
+- `tests/test_compositor.py` — compositor node tree creation per render type
+
+CI runs on PRs to main via `.github/workflows/test.yml` (lint + 3-variant matrix).
+
 ## Blender extension permissions
 
 HiFive and Eevee Next targets Blender 4.2+ extension system. The manifest requires `permissions = ["files"]` to allow `bpy.data.images.load()` to read bundled HDRI textures from the addon directory.
