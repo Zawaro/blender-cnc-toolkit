@@ -403,50 +403,44 @@ def _set_camera_view(context):
 # Light (dual sun — primary + shadow)
 # ──────────────────────────────────────────────
 def create_light(context, props):
-  vll = context.view_layer.layer_collection
-  context.view_layer.active_layer_collection = vll.children[COLLECTION_NAME]
   config = get_config(props.game, props.variant)
 
   # Primary sun
-  bpy.ops.object.light_add(
-    type="SUN", radius=1, align="WORLD",
-    location=config.sun_location, rotation=config.sun_rotation,
-  )
-  sun = context.active_object
-  sun.name = f"{PREFIX}Sun"
-  sun.data.name = f"{PREFIX}Sun"
-  sun.data.energy = config.sun_energy
-  sun.data.angle = config.sun_angle
-  sun.data.cycles.use_multiple_importance_sampling = False
-  sun.data.shadow_buffer_bias = 0.02
-  sun.data.shadow_cascade_count = 2
-  sun.data.shadow_cascade_fade = 1
-  sun.data.shadow_cascade_max_distance = 1000
-  sun.data.shadow_cascade_exponent = 0.8
-  sun.data.use_contact_shadow = True
-  sun.data.contact_shadow_distance = 1000
-  sun.data.contact_shadow_bias = 0.5
-  sun.data.contact_shadow_thickness = 0.7
+  light_data = bpy.data.lights.new(f"{PREFIX}Sun", type="SUN")
+  light_data.energy = config.sun_energy
+  light_data.angle = config.sun_angle
+  light_data.cycles.use_multiple_importance_sampling = False
+  light_data.shadow_buffer_bias = 0.02
+  light_data.shadow_cascade_count = 2
+  light_data.shadow_cascade_fade = 1
+  light_data.shadow_cascade_max_distance = 1000
+  light_data.shadow_cascade_exponent = 0.8
+  light_data.use_contact_shadow = True
+  light_data.contact_shadow_distance = 1000
+  light_data.contact_shadow_bias = 0.5
+  light_data.contact_shadow_thickness = 0.7
+  sun = bpy.data.objects.new(f"{PREFIX}Sun", light_data)
+  bpy.data.collections[COLLECTION_NAME].objects.link(sun)
+  sun.location = config.sun_location
+  sun.rotation_euler = config.sun_rotation
   sun.hide_select = True
   sun.hide_render = True
 
   # Shadow sun
-  bpy.ops.object.light_add(
-    type="SUN", radius=1, align="WORLD",
-    location=config.sun_location, rotation=config.sun_rotation,
-  )
-  sun2 = context.active_object
-  sun2.name = f"{PREFIX}Sun.shadow"
-  sun2.data.name = f"{PREFIX}Sun.shadow"
-  sun2.data.energy = config.sun_shadow_energy
-  sun2.data.angle = config.sun_angle
-  sun2.data.cycles.use_multiple_importance_sampling = False
-  sun2.data.shadow_buffer_bias = 0.02
-  sun2.data.shadow_cascade_count = config.sun_shadow_cascade_count
-  sun2.data.shadow_cascade_fade = config.sun_shadow_cascade_fade
-  sun2.data.shadow_cascade_max_distance = config.sun_shadow_cascade_max_distance
-  sun2.data.shadow_cascade_exponent = config.sun_shadow_cascade_exponent
-  sun2.data.use_contact_shadow = False
+  light_data2 = bpy.data.lights.new(f"{PREFIX}Sun.shadow", type="SUN")
+  light_data2.energy = config.sun_shadow_energy
+  light_data2.angle = config.sun_angle
+  light_data2.cycles.use_multiple_importance_sampling = False
+  light_data2.shadow_buffer_bias = 0.02
+  light_data2.shadow_cascade_count = config.sun_shadow_cascade_count
+  light_data2.shadow_cascade_fade = config.sun_shadow_cascade_fade
+  light_data2.shadow_cascade_max_distance = config.sun_shadow_cascade_max_distance
+  light_data2.shadow_cascade_exponent = config.sun_shadow_cascade_exponent
+  light_data2.use_contact_shadow = False
+  sun2 = bpy.data.objects.new(f"{PREFIX}Sun.shadow", light_data2)
+  bpy.data.collections[COLLECTION_NAME].objects.link(sun2)
+  sun2.location = config.sun_location
+  sun2.rotation_euler = config.sun_rotation
   sun2.hide_select = True
   sun2.hide_render = True
   sun2.hide_viewport = True
@@ -653,9 +647,14 @@ def create_world(context, props):
 # Planes and materials
 # ──────────────────────────────────────────────
 def _make_plane(name, size=140, location=(0, 0, -0.01), hide_render=True, hide_viewport=True, glossy=False, shadow_catcher=False, is_holdout=False, material=None):
-  bpy.ops.mesh.primitive_plane_add(size=size, enter_editmode=False, align="WORLD", location=location)
-  obj = bpy.context.active_object
-  obj.name = name
+  mesh = bpy.data.meshes.new(name)
+  s = size / 2
+  verts = [(-s, -s, 0), (s, -s, 0), (s, s, 0), (-s, s, 0)]
+  faces = [(0, 1, 2, 3)]
+  mesh.from_pydata(verts, [], faces)
+  obj = bpy.data.objects.new(name, mesh)
+  bpy.data.collections[COLLECTION_NAME].objects.link(obj)
+  obj.location = location
   obj.hide_render = hide_render
   obj.hide_viewport = hide_viewport
   obj.visible_glossy = glossy

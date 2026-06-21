@@ -291,19 +291,15 @@ def _set_camera_view(context):
 # Light
 # ──────────────────────────────────────────────
 def create_light(context, props):
-  vll = context.view_layer.layer_collection
-  context.view_layer.active_layer_collection = vll.children[COLLECTION_NAME]
   config = get_config(props.game, props.variant)
-  bpy.ops.object.light_add(
-    type="SUN", radius=1, align="WORLD",
-    location=config.sun_location, rotation=config.sun_rotation,
-  )
-  sun = context.active_object
-  sun.name = f"{PREFIX}Sun"
-  sun.data.name = f"{PREFIX}Sun"
-  sun.data.energy = config.sun_energy
-  sun.data.angle = config.sun_angle
-  sun.data.cycles.use_multiple_importance_sampling = False
+  light_data = bpy.data.lights.new(f"{PREFIX}Sun", type="SUN")
+  light_data.energy = config.sun_energy
+  light_data.angle = config.sun_angle
+  light_data.cycles.use_multiple_importance_sampling = False
+  sun = bpy.data.objects.new(f"{PREFIX}Sun", light_data)
+  bpy.data.collections[COLLECTION_NAME].objects.link(sun)
+  sun.location = config.sun_location
+  sun.rotation_euler = config.sun_rotation
   sun.hide_select = True
   sun.hide_render = True
 
@@ -418,9 +414,14 @@ def create_world(context, props):
 # Planes and materials
 # ──────────────────────────────────────────────
 def _make_plane(name, size=140, location=(0, 0, -0.01), hide_render=True, hide_viewport=True, glossy=False, shadow_catcher=False, material=None):
-  bpy.ops.mesh.primitive_plane_add(size=size, enter_editmode=False, align="WORLD", location=location)
-  obj = bpy.context.active_object
-  obj.name = name
+  mesh = bpy.data.meshes.new(name)
+  s = size / 2
+  verts = [(-s, -s, 0), (s, -s, 0), (s, s, 0), (-s, s, 0)]
+  faces = [(0, 1, 2, 3)]
+  mesh.from_pydata(verts, [], faces)
+  obj = bpy.data.objects.new(name, mesh)
+  bpy.data.collections[COLLECTION_NAME].objects.link(obj)
+  obj.location = location
   obj.hide_render = hide_render
   obj.hide_viewport = hide_viewport
   obj.visible_glossy = glossy
