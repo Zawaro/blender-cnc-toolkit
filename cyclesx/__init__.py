@@ -1,7 +1,7 @@
 bl_info = {
   "name": "Blender C&C Toolkit (CyclesX)",
   "author": "Zawaro",
-  "version": (0, 2, 1),
+  "version": (0, 2, 2),
   "blender": (3, 0, 0),
   "location": "View3D > Sidebar > C&C Toolkit",
   "description": "All-in-one toolkit to render C&C assets.",
