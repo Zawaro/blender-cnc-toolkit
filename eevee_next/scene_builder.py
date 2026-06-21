@@ -731,7 +731,10 @@ def _alpha_convert_node():
 def _wire_object_or_buildup(context, tree, rl, go, links, nodes, props):
   bg_rgb = nodes.new("CompositorNodeRGB")
   bg_rgb.name = f"{PREFIX}BackgroundRGB"
-  bg_rgb.outputs[0].default_value = props.background_color
+  if props.transparent_bg:
+    bg_rgb.outputs[0].default_value = (0, 0, 0, 0)
+  else:
+    bg_rgb.outputs[0].default_value = props.background_color
   bg_rgb.location = (0, 200)
 
   if props.transparent_bg:
@@ -803,10 +806,13 @@ def _wire_preview(context, tree, rl, go, links, nodes, props, config):
   shadow_rgb.outputs[0].default_value = props.shadow_color
   shadow_rgb.location = (0, -200)
 
-  ac = _alpha_convert_node()
-  ac_node = nodes.new("CompositorNodeGroup")
-  ac_node.node_tree = ac
-  ac_node.location = (200, 0)
+  use_aa_bypass = props.transparent_bg and props.aa_against_bg
+
+  if not use_aa_bypass:
+    ac = _alpha_convert_node()
+    ac_node = nodes.new("CompositorNodeGroup")
+    ac_node.node_tree = ac
+    ac_node.location = (200, 0)
 
   crypto = nodes.new("CompositorNodeCryptomatteV2")
   crypto.matte_id = f"{PREFIX}Plane.holdout"
@@ -817,9 +823,10 @@ def _wire_preview(context, tree, rl, go, links, nodes, props, config):
   threshold.inputs[1].default_value = 0.72
   threshold.location = (300, -300)
 
-  mask = nodes.new("CompositorNodeMath")
-  mask.operation = "MULTIPLY"
-  mask.location = (400, -300)
+  if not use_aa_bypass:
+    mask = nodes.new("CompositorNodeMath")
+    mask.operation = "MULTIPLY"
+    mask.location = (400, -300)
 
   opacity = nodes.new("CompositorNodeMath")
   opacity.operation = "MULTIPLY"
@@ -848,28 +855,48 @@ def _wire_preview(context, tree, rl, go, links, nodes, props, config):
       img_node.location = (0, 400)
       bg_input = img_node.outputs[0]
 
-  links.new(rl.outputs[0], ac_node.inputs[0])
   links.new(rl.outputs[0], crypto.inputs[0])
 
   links.new(crypto.outputs[1], threshold.inputs[0])
-  links.new(threshold.outputs[0], mask.inputs[0])
-  links.new(ac_node.outputs[1], mask.inputs[1])
-  links.new(mask.outputs[0], opacity.inputs[0])
 
-  links.new(opacity.outputs[0], ao_shadow.inputs[0])
+  if use_aa_bypass:
+    links.new(threshold.outputs[0], opacity.inputs[0])
 
-  links.new(bg_input, ao_shadow.inputs[1])
-  links.new(shadow_rgb.outputs[0], ao_shadow.inputs[2])
+    links.new(opacity.outputs[0], ao_shadow.inputs[0])
 
-  links.new(mask.outputs[0], ao_tint.inputs[0])
+    links.new(bg_input, ao_shadow.inputs[1])
+    links.new(shadow_rgb.outputs[0], ao_shadow.inputs[2])
 
-  hue_mix = _create_remap_hue(context, nodes, links, rl, go, props) if props.remap_materials else None
-  if hue_mix:
-    links.new(ac_node.outputs[0], hue_mix.inputs[1])
-    links.new(hue_mix.outputs[0], ao_tint.inputs[1])
+    links.new(threshold.outputs[0], ao_tint.inputs[0])
+
+    hue_mix = _create_remap_hue(context, nodes, links, rl, go, props) if props.remap_materials else None
+    if hue_mix:
+      links.new(rl.outputs[0], hue_mix.inputs[1])
+      links.new(hue_mix.outputs[0], ao_tint.inputs[1])
+    else:
+      links.new(rl.outputs[0], ao_tint.inputs[1])
+    links.new(ao_shadow.outputs[0], ao_tint.inputs[2])
   else:
-    links.new(ac_node.outputs[0], ao_tint.inputs[1])
-  links.new(ao_shadow.outputs[0], ao_tint.inputs[2])
+    links.new(rl.outputs[0], ac_node.inputs[0])
+
+    links.new(threshold.outputs[0], mask.inputs[0])
+    links.new(ac_node.outputs[1], mask.inputs[1])
+    links.new(mask.outputs[0], opacity.inputs[0])
+
+    links.new(opacity.outputs[0], ao_shadow.inputs[0])
+
+    links.new(bg_input, ao_shadow.inputs[1])
+    links.new(shadow_rgb.outputs[0], ao_shadow.inputs[2])
+
+    links.new(mask.outputs[0], ao_tint.inputs[0])
+
+    hue_mix = _create_remap_hue(context, nodes, links, rl, go, props) if props.remap_materials else None
+    if hue_mix:
+      links.new(ac_node.outputs[0], hue_mix.inputs[1])
+      links.new(hue_mix.outputs[0], ao_tint.inputs[1])
+    else:
+      links.new(ac_node.outputs[0], ao_tint.inputs[1])
+    links.new(ao_shadow.outputs[0], ao_tint.inputs[2])
 
   links.new(bg_input, ao.inputs[1])
   links.new(ao_tint.outputs[0], ao.inputs[2])
