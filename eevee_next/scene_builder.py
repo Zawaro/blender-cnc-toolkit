@@ -120,8 +120,6 @@ def save_scene_state(context):
     "film_transparent": scene.render.film_transparent,
     "color_mode": scene.render.image_settings.color_mode,
     "file_format": scene.render.image_settings.file_format,
-    "frame_start": scene.frame_start,
-    "frame_end": scene.frame_end,
     "world": scene.world.name if scene.world else "",
     "filter_size": scene.render.filter_size,
     "filter_width": scene.cycles.filter_width if scene.render.engine == "CYCLES" else 0.0,
@@ -142,8 +140,6 @@ def restore_scene_state(context):
   scene.render.film_transparent = state["film_transparent"]
   scene.render.image_settings.color_mode = state["color_mode"]
   scene.render.image_settings.file_format = state["file_format"]
-  scene.frame_start = state["frame_start"]
-  scene.frame_end = state["frame_end"]
   if state["world"] and state["world"] in bpy.data.worlds:
     scene.world = bpy.data.worlds[state["world"]]
   scene.render.filter_size = state["filter_size"]
@@ -982,8 +978,6 @@ def _wire_shadow(tree, rl, go, links, nodes, props, config):
 def apply_initial_settings(context, props):
   config = get_config(props.game, props.variant)
   scene = context.scene
-  scene.frame_start = 0
-  scene.frame_end = 11
   scene.render.fps = 10
   scene.render.dither_intensity = 0
   scene.render.image_settings.compression = 90
