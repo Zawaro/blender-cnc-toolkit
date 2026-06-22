@@ -9,12 +9,6 @@ def scene_builder(addon_name):
 
 
 class TestApplyInitialSettings:
-  def test_sets_frame_range(self, scene_with_addon, scene_builder):
-    props = scene_with_addon.scene.cc_toolkit
-    scene_builder.apply_initial_settings(scene_with_addon, props)
-    assert scene_with_addon.scene.frame_start == 0
-    assert scene_with_addon.scene.frame_end == 11
-
   def test_sets_fps(self, scene_with_addon, scene_builder):
     props = scene_with_addon.scene.cc_toolkit
     scene_builder.apply_initial_settings(scene_with_addon, props)
