@@ -64,6 +64,20 @@ def crop_canvas_monitor_handler(scene, depsgraph=None):
   crop_canvas_monitor(scene)
 
 
+def _write_guide():
+  addon_dir = os.path.dirname(os.path.realpath(__file__))
+  guide_path = os.path.join(addon_dir, "GUIDE.md")
+  if os.path.isfile(guide_path):
+    with open(guide_path, "r") as f:
+      content = f.read()
+    text = bpy.data.texts.get("C&C Toolkit Guide")
+    if not text:
+      text = bpy.data.texts.new("C&C Toolkit Guide")
+    text.clear()
+    text.write(content)
+    text.filepath = ""
+
+
 def register():
   for cls in classes:
     register_class(cls)
@@ -73,6 +87,8 @@ def register():
 
   if crop_canvas_monitor_handler not in bpy.app.handlers.depsgraph_update_post:
     bpy.app.handlers.depsgraph_update_post.append(crop_canvas_monitor_handler)
+
+  bpy.app.timers.register(_write_guide, first_interval=0.1)
 
 
 def unregister():
