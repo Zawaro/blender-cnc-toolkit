@@ -693,7 +693,7 @@ def _create_remap_hue(context, nodes, links, rl_node, go, props):
 
   links.new(crypto.outputs[1], threshold.inputs[0])
   links.new(threshold.outputs[0], hue_mix.inputs[0])
-  hue_mix.inputs['B'].default_value = props.remap_color
+  hue_mix.inputs['B'].default_value = (*props.remap_color, 1)
 
   return hue_mix
 
@@ -705,7 +705,7 @@ def _alpha_convert_node():
 def _wire_object_or_buildup(context, tree, rl, go, links, nodes, props):
   bg_rgb = nodes.new("CompositorNodeRGB")
   bg_rgb.name = f"{PREFIX}BackgroundRGB"
-  bg_rgb.outputs[0].default_value = props.background_color
+  bg_rgb.outputs[0].default_value = (*props.background_color, 1)
   bg_rgb.location = (0, 200)
 
   if props.transparent_bg:
@@ -769,12 +769,12 @@ def _wire_preview(context, tree, rl, go, links, nodes, props, config):
   if props.transparent_bg:
     bg_rgb.outputs[0].default_value = (0, 0, 0, 0)
   else:
-    bg_rgb.outputs[0].default_value = props.background_color
+    bg_rgb.outputs[0].default_value = (*props.background_color, 1)
   bg_rgb.location = (0, 200)
 
   shadow_rgb = nodes.new("CompositorNodeRGB")
   shadow_rgb.name = f"{PREFIX}ShadowRGB"
-  shadow_rgb.outputs[0].default_value = props.shadow_color
+  shadow_rgb.outputs[0].default_value = (*props.shadow_color, 1)
   shadow_rgb.location = (0, -200)
 
   use_aa_bypass = props.transparent_bg and props.aa_against_bg
@@ -884,7 +884,7 @@ def _wire_shadow(tree, rl, go, links, nodes, props, config):
   if props.transparent_bg:
     bg_rgb.outputs[0].default_value = (0, 0, 0, 0)
   else:
-    bg_rgb.outputs[0].default_value = props.background_color
+    bg_rgb.outputs[0].default_value = (*props.background_color, 1)
   bg_rgb.location = (0, 200)
 
   crypto = nodes.new("CompositorNodeCryptomatteV2")
