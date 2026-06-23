@@ -25,7 +25,14 @@ from bpy.props import PointerProperty
 from bpy.utils import unregister_class
 
 from .properties import CncToolkitProperties, RemapMaterialItem
-from .panel import VIEW3D_PT_cc_toolkit, VIEW3D_PT_cc_toolkit_crop_canvas
+from .panel import (
+  VIEW3D_PT_cc_toolkit,
+  VIEW3D_PT_cc_toolkit_render,
+  VIEW3D_PT_cc_toolkit_bg_image,
+  VIEW3D_PT_cc_toolkit_materials,
+  VIEW3D_PT_cc_toolkit_output,
+  VIEW3D_PT_cc_toolkit_crop_canvas,
+)
 from .operators import (
   CNC_OT_generate_template,
   CNC_OT_purge_template,
@@ -48,6 +55,10 @@ classes = (
   CncToolkitProperties,
   RENDER_PT_crop_canvas_format,
   VIEW3D_PT_cc_toolkit,
+  VIEW3D_PT_cc_toolkit_render,
+  VIEW3D_PT_cc_toolkit_bg_image,
+  VIEW3D_PT_cc_toolkit_materials,
+  VIEW3D_PT_cc_toolkit_output,
   VIEW3D_PT_cc_toolkit_crop_canvas,
   CNC_OT_generate_template,
   CNC_OT_purge_template,

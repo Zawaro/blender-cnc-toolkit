@@ -36,6 +36,7 @@ RENDER_TYPE_ITEMS = [
 
 def _rebuild(instance, context):
   from . import scene_builder
+
   scene_builder.rebuild_all(context)
 
 
@@ -43,6 +44,7 @@ def _rebuild_if_generated(instance, context):
   if not context.scene.cc_toolkit.template_generated:
     return
   from . import scene_builder
+
   scene_builder.rebuild_all(context)
 
 
@@ -123,8 +125,8 @@ class CncToolkitProperties(bpy.types.PropertyGroup):
     name="Background Color",
     description="Solid background color for non-transparent renders",
     subtype="COLOR",
-    size=4,
-    default=(0, 0, 1, 1),
+    size=3,
+    default=(0, 0, 1),
     min=0.0,
     max=1.0,
     update=_rebuild_if_generated,
@@ -134,8 +136,8 @@ class CncToolkitProperties(bpy.types.PropertyGroup):
     name="Shadow Color",
     description="Color tint applied to shadow-only renders",
     subtype="COLOR",
-    size=4,
-    default=(0, 0, 0, 1),
+    size=3,
+    default=(0, 0, 0),
     min=0.0,
     max=1.0,
     update=_rebuild_if_generated,
@@ -213,8 +215,8 @@ class CncToolkitProperties(bpy.types.PropertyGroup):
     name="Remap Color",
     description="Target HUE color for the remapped material",
     subtype="COLOR",
-    size=4,
-    default=(1, 0, 0, 1),
+    size=3,
+    default=(1, 0, 0),
     min=0.0,
     max=1.0,
     update=_rebuild_if_generated,

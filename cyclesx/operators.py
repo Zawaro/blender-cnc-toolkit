@@ -56,7 +56,9 @@ class CNC_OT_render(bpy.types.Operator):
 class CNC_OT_render_shadow(bpy.types.Operator):
   bl_idname = "ccnc.render_shadow"
   bl_label = "Render Animation"
-  bl_description = "Render all frames. If shadow option is on, renders primary pass then shadow pass."
+  bl_description = (
+    "Render all frames. If shadow option is on, renders primary pass then shadow pass."
+  )
 
   _queue: list[tuple[str, int, str]] = []
   _original_rt: str = ""
@@ -70,7 +72,10 @@ class CNC_OT_render_shadow(bpy.types.Operator):
     CNC_OT_render_shadow._original_rt = props.render_type
     CNC_OT_render_shadow._frame_count = scene.frame_end - scene.frame_start + 1
 
-    if props.render_shadow_with_animation and props.render_type in {"OBJECT", "BUILDUP"}:
+    if props.render_shadow_with_animation and props.render_type in {
+      "OBJECT",
+      "BUILDUP",
+    }:
       passes = [props.render_type, "SHADOW"]
     else:
       passes = [props.render_type]
@@ -157,7 +162,9 @@ class CNC_OT_cancel_render(bpy.types.Operator):
 class CNC_OT_add_remap_material(bpy.types.Operator):
   bl_idname = "ccnc.add_remap_material"
   bl_label = "Add Remap Material"
-  bl_description = "Add the selected material to the remap list"
+  bl_description = (
+    "Add the selected material to the remap list (toolkit materials excluded)"
+  )
 
   def execute(self, context):
     props = context.scene.cc_toolkit
@@ -165,7 +172,12 @@ class CNC_OT_add_remap_material(bpy.types.Operator):
       if not props.remap_materials[i].material:
         props.remap_materials.remove(i)
     if props.remap_material_picker:
-      if any(item.material == props.remap_material_picker for item in props.remap_materials):
+      if props.remap_material_picker.name.startswith("_CNC_"):
+        self.report({"WARNING"}, "Cannot add toolkit materials")
+        return {"CANCELLED"}
+      if any(
+        item.material == props.remap_material_picker for item in props.remap_materials
+      ):
         self.report({"WARNING"}, "Material already in list")
         return {"CANCELLED"}
       item = props.remap_materials.add()
