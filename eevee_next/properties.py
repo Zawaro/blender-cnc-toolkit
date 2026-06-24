@@ -48,6 +48,10 @@ def _rebuild_if_generated(instance, context):
   scene_builder.rebuild_all(context)
 
 
+def _filter_toolkit_material(self, material):
+  return not material.name.startswith("_CNC_")
+
+
 class RemapMaterialItem(bpy.types.PropertyGroup):
   material: bpy.props.PointerProperty(type=bpy.types.Material)
 
@@ -205,6 +209,7 @@ class CncToolkitProperties(bpy.types.PropertyGroup):
     name="Remap Material",
     description="Material to add to the remap list",
     type=bpy.types.Material,
+    poll=_filter_toolkit_material,
   )
 
   remap_materials: bpy.props.CollectionProperty(
