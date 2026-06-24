@@ -226,6 +226,41 @@ def rebuild_all(context):
   scene.render.use_compositing = saved_compositing
 
 
+def rebuild_compositor(context):
+  props = context.scene.cc_toolkit
+  scene = context.scene
+  saved_compositing = scene.render.use_compositing
+  scene.render.use_compositing = False
+  target_engine = ENGINE_MAP[props.engine]
+  if scene.render.engine != target_engine:
+    scene.render.engine = target_engine
+
+  vl = context.view_layer
+  if props.remap_materials:
+    vl.use_pass_cryptomatte_material = True
+    vl.pass_cryptomatte_depth = max(vl.pass_cryptomatte_depth, 2)
+  else:
+    vl.use_pass_cryptomatte_material = False
+
+  if scene.compositing_node_group and scene.compositing_node_group.name.startswith(PREFIX):
+    scene.compositing_node_group = None
+  for name in list(bpy.data.node_groups.keys()):
+    if name.startswith(PREFIX) or name == ALPHA_CONVERT_NAME:
+      bpy.data.node_groups.remove(bpy.data.node_groups[name])
+
+  create_compositor(context, props)
+  arrange_nodes([tree for tree in bpy.data.node_groups if tree.name.startswith(PREFIX) or ALPHA_CONVERT_NAME in tree.name])
+
+  apply_render_settings(context, props)
+  apply_render_type_visibility(context)
+
+  crop = context.scene.cc_crop_canvas
+  if crop.use_crop_canvas:
+    crop.update_resolution(context)
+
+  scene.render.use_compositing = saved_compositing
+
+
 # ──────────────────────────────────────────────
 # Collections
 # ──────────────────────────────────────────────

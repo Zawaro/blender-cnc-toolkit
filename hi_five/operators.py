@@ -184,7 +184,7 @@ class CNC_OT_add_remap_material(bpy.types.Operator):
       item.material = props.remap_material_picker
       props.remap_material_picker = None
       if props.template_generated:
-        scene_builder.rebuild_all(context)
+        scene_builder.rebuild_compositor(context)
     return {"FINISHED"}
 
 
@@ -200,7 +200,7 @@ class CNC_OT_remove_remap_material(bpy.types.Operator):
     if 0 <= self.index < len(props.remap_materials):
       props.remap_materials.remove(self.index)
       if props.template_generated:
-        scene_builder.rebuild_all(context)
+        scene_builder.rebuild_compositor(context)
     return {"FINISHED"}
 
 
@@ -214,5 +214,5 @@ class CNC_OT_clear_remap_materials(bpy.types.Operator):
     if props.remap_materials:
       props.remap_materials.clear()
       if props.template_generated:
-        scene_builder.rebuild_all(context)
+        scene_builder.rebuild_compositor(context)
     return {"FINISHED"}

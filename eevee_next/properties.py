@@ -48,6 +48,14 @@ def _rebuild_if_generated(instance, context):
   scene_builder.rebuild_all(context)
 
 
+def _rebuild_compositor_if_generated(instance, context):
+  if not context.scene.cc_toolkit.template_generated:
+    return
+  from . import scene_builder
+
+  scene_builder.rebuild_compositor(context)
+
+
 def _filter_toolkit_material(self, material):
   return not material.name.startswith("_CNC_")
 
@@ -78,7 +86,7 @@ class CncToolkitProperties(bpy.types.PropertyGroup):
     description="Render engine",
     items=ENGINE_ITEMS,
     default="CYCLES",
-    update=_rebuild_if_generated,
+    update=_rebuild_compositor_if_generated,
   )
 
   camera_mode: bpy.props.EnumProperty(
@@ -94,7 +102,7 @@ class CncToolkitProperties(bpy.types.PropertyGroup):
     description="Frame render type",
     items=RENDER_TYPE_ITEMS,
     default="DEFAULT",
-    update=_rebuild_if_generated,
+    update=_rebuild_compositor_if_generated,
   )
 
   frame_offset: bpy.props.IntProperty(
@@ -115,14 +123,14 @@ class CncToolkitProperties(bpy.types.PropertyGroup):
     name="Anti-aliasing against background",
     description="Bypass Alpha Convert node group for smooth anti-aliased edges via film_transparent",
     default=False,
-    update=_rebuild_if_generated,
+    update=_rebuild_compositor_if_generated,
   )
 
   transparent_bg: bpy.props.BoolProperty(
     name="Transparent background",
     description="Output RGBA (alpha channel present) or RGB (solid background)",
     default=False,
-    update=_rebuild_if_generated,
+    update=_rebuild_compositor_if_generated,
   )
 
   background_color: bpy.props.FloatVectorProperty(
@@ -133,7 +141,7 @@ class CncToolkitProperties(bpy.types.PropertyGroup):
     default=(0, 0, 1),
     min=0.0,
     max=1.0,
-    update=_rebuild_if_generated,
+    update=_rebuild_compositor_if_generated,
   )
 
   shadow_color: bpy.props.FloatVectorProperty(
@@ -144,21 +152,21 @@ class CncToolkitProperties(bpy.types.PropertyGroup):
     default=(0, 0, 0),
     min=0.0,
     max=1.0,
-    update=_rebuild_if_generated,
+    update=_rebuild_compositor_if_generated,
   )
 
   use_bg_image: bpy.props.BoolProperty(
     name="Background Image",
     description="Use an image as the background instead of the solid color",
     default=False,
-    update=_rebuild_if_generated,
+    update=_rebuild_compositor_if_generated,
   )
 
   bg_image_path: bpy.props.StringProperty(
     name="Background Image",
     default="",
     subtype="FILE_PATH",
-    update=_rebuild_if_generated,
+    update=_rebuild_compositor_if_generated,
   )
 
   shadow_opacity: bpy.props.FloatProperty(
@@ -167,7 +175,7 @@ class CncToolkitProperties(bpy.types.PropertyGroup):
     default=1.0,
     min=0.0,
     max=1.0,
-    update=_rebuild_if_generated,
+    update=_rebuild_compositor_if_generated,
   )
 
   output_path: bpy.props.StringProperty(
@@ -224,5 +232,5 @@ class CncToolkitProperties(bpy.types.PropertyGroup):
     default=(1, 0, 0),
     min=0.0,
     max=1.0,
-    update=_rebuild_if_generated,
+    update=_rebuild_compositor_if_generated,
   )
