@@ -189,11 +189,22 @@ def _delete_collection(coll):
 # ──────────────────────────────────────────────
 # Rebuild
 # ──────────────────────────────────────────────
+def _find_layer_collection(root, name):
+  if root.name == name:
+    return root
+  for child in root.children:
+    found = _find_layer_collection(child, name)
+    if found:
+      return found
+  return None
+
+
 def rebuild_all(context):
   props = context.scene.cc_toolkit
   scene = context.scene
   saved_compositing = scene.render.use_compositing
   scene.render.use_compositing = False
+  saved_active_name = context.view_layer.active_layer_collection.name
   target_engine = ENGINE_MAP[props.engine]
   if scene.render.engine != target_engine:
     scene.render.engine = target_engine
@@ -211,6 +222,7 @@ def rebuild_all(context):
   create_light(context, props)
   create_world(context, props)
   create_planes(context)
+  apply_boolean_modifier(context)
   create_compositor(context, props)
 
   trees_to_arrange = [tree for tree in bpy.data.node_groups if tree.name.startswith(PREFIX) or ALPHA_CONVERT_NAME in tree.name]
@@ -224,6 +236,13 @@ def rebuild_all(context):
   crop = context.scene.cc_crop_canvas
   if crop.use_crop_canvas:
     crop.update_resolution(context)
+
+  root = context.view_layer.layer_collection
+  if saved_active_name.startswith(PREFIX):
+    context.view_layer.active_layer_collection = root
+  else:
+    found = _find_layer_collection(root, saved_active_name)
+    context.view_layer.active_layer_collection = found or root
 
   scene.render.use_compositing = saved_compositing
 
@@ -267,6 +286,28 @@ def rebuild_compositor(context):
     crop.update_resolution(context)
 
   scene.render.use_compositing = saved_compositing
+
+
+def apply_boolean_modifier(context):
+  props = context.scene.cc_toolkit
+  for obj in bpy.data.objects:
+    if obj.name.startswith(f"{PREFIX}Plane."):
+      existing = obj.modifiers.get("Boolean")
+      if props.boolean_object:
+        if existing:
+          existing.object = props.boolean_object
+        else:
+          mod = obj.modifiers.new(name="Boolean", type="BOOLEAN")
+          mod.operation = "DIFFERENCE"
+          mod.solver = "FAST"
+          mod.object = props.boolean_object
+      elif existing:
+        obj.modifiers.remove(existing)
+  if props.boolean_object:
+    if "_cnc_original_display_type" not in props.boolean_object:
+      props.boolean_object["_cnc_original_display_type"] = props.boolean_object.display_type
+    props.boolean_object.hide_render = True
+    props.boolean_object.display_type = "WIRE"
 
 
 # ──────────────────────────────────────────────
