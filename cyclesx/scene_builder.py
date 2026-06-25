@@ -300,11 +300,22 @@ def _delete_collection(coll):
 # ──────────────────────────────────────────────
 # Rebuild
 # ──────────────────────────────────────────────
+def _find_layer_collection(root, name):
+  if root.name == name:
+    return root
+  for child in root.children:
+    found = _find_layer_collection(child, name)
+    if found:
+      return found
+  return None
+
+
 def rebuild_all(context):
   props = context.scene.cc_toolkit
   scene = context.scene
   saved_compositing = scene.render.use_compositing
   scene.render.use_compositing = False
+  saved_active_name = context.view_layer.active_layer_collection.name
   target_engine = ENGINE_MAP[props.engine]
   if scene.render.engine != target_engine:
     scene.render.engine = target_engine
@@ -336,6 +347,13 @@ def rebuild_all(context):
   crop = context.scene.cc_crop_canvas
   if crop.use_crop_canvas:
     crop.update_resolution(context)
+
+  root = context.view_layer.layer_collection
+  if saved_active_name.startswith(PREFIX):
+    context.view_layer.active_layer_collection = root
+  else:
+    found = _find_layer_collection(root, saved_active_name)
+    context.view_layer.active_layer_collection = found or root
 
   scene.render.use_compositing = saved_compositing
 

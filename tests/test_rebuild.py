@@ -345,3 +345,59 @@ class TestRemapMaterialOperators:
       assert call_count[0] == 1
     finally:
       scene_builder.rebuild_compositor = original
+
+
+class TestActiveCollectionRestoration:
+  """rebuild_all must not leave a _CNC_ toolkit collection as the active collection."""
+
+  def test_restores_non_toolkit_active_collection(self, rebuild_context, scene_builder):
+    """rebuild_all restores the user's original non-toolkit active collection."""
+    vl = rebuild_context.view_layer
+    root = vl.layer_collection
+    vl.active_layer_collection = root
+    saved_name = vl.active_layer_collection.name
+
+    props = rebuild_context.scene.cc_toolkit
+    props.game = "RA2"
+    props.variant = "BASE"
+    props.engine = "CYCLES"
+    props.render_type = "DEFAULT"
+    scene_builder.rebuild_all(rebuild_context)
+
+    active = vl.active_layer_collection
+    assert not active.name.startswith("_CNC_")
+    assert active.name == saved_name
+
+  def test_restores_custom_user_collection(self, rebuild_context, scene_builder):
+    """rebuild_all restores a user-created collection as active."""
+    vl = rebuild_context.view_layer
+    root = vl.layer_collection
+    user_coll = bpy.data.collections.new("UserStuff")
+    root.collection.children.link(user_coll)
+    vl.active_layer_collection = root.children.get("UserStuff")
+
+    props = rebuild_context.scene.cc_toolkit
+    props.game = "RA2"
+    props.variant = "BASE"
+    props.engine = "CYCLES"
+    props.render_type = "DEFAULT"
+    scene_builder.rebuild_all(rebuild_context)
+
+    assert vl.active_layer_collection.name == "UserStuff"
+
+  def test_falls_back_to_root_when_toolkit_was_active(
+    self, rebuild_context, rebuild_props, scene_builder
+  ):
+    """rebuild_all falls back to Scene Collection when a toolkit coll was active."""
+    vl = rebuild_context.view_layer
+    root = vl.layer_collection
+
+    after_first_rebuild = root.children.get("_CNC_Toolkit")
+    assert after_first_rebuild is not None
+    vl.active_layer_collection = after_first_rebuild
+
+    scene_builder.rebuild_all(rebuild_context)
+
+    active = vl.active_layer_collection
+    assert not active.name.startswith("_CNC_")
+    assert active.name == root.name
