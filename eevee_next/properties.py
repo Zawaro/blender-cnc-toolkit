@@ -60,6 +60,23 @@ def _filter_toolkit_material(self, material):
   return not material.name.startswith("_CNC_")
 
 
+def _filter_mesh_object(self, obj):
+  return obj.type == "MESH" and not obj.name.startswith("_CNC_")
+
+
+def _apply_boolean_if_generated(self, context):
+  props = context.scene.cc_toolkit
+  prev_name = props.boolean_object_prev
+  if prev_name and prev_name in bpy.data.objects:
+    prev_obj = bpy.data.objects[prev_name]
+    if "_cnc_original_display_type" in prev_obj:
+      prev_obj.display_type = prev_obj["_cnc_original_display_type"]
+      del prev_obj["_cnc_original_display_type"]
+  props.boolean_object_prev = props.boolean_object.name if props.boolean_object else ""
+  from . import scene_builder
+  scene_builder.apply_boolean_modifier(context)
+
+
 class RemapMaterialItem(bpy.types.PropertyGroup):
   material: bpy.props.PointerProperty(type=bpy.types.Material)
 
@@ -233,4 +250,16 @@ class CncToolkitProperties(bpy.types.PropertyGroup):
     min=0.0,
     max=1.0,
     update=_rebuild_compositor_if_generated,
+  )
+
+  boolean_object: bpy.props.PointerProperty(
+    name="Boolean Cutter",
+    description="Mesh object to cut through all render planes",
+    type=bpy.types.Object,
+    poll=_filter_mesh_object,
+    update=_apply_boolean_if_generated,
+  )
+
+  boolean_object_prev: bpy.props.StringProperty(
+    default="",
   )

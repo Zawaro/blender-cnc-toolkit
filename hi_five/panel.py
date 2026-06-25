@@ -145,6 +145,25 @@ class VIEW3D_PT_cc_toolkit_materials(bpy.types.Panel):
       layout.prop(props, "remap_color")
 
 
+class VIEW3D_PT_cc_toolkit_boolean(bpy.types.Panel):
+  bl_idname = "VIEW3D_PT_cc_toolkit_boolean"
+  bl_label = "Boolean"
+  bl_parent_id = "VIEW3D_PT_cc_toolkit"
+  bl_space_type = "VIEW_3D"
+  bl_region_type = "UI"
+  bl_category = "C&C Toolkit"
+  bl_options = {"DEFAULT_CLOSED"}
+
+  @classmethod
+  def poll(cls, context):
+    return context.scene.cc_toolkit.template_generated
+
+  def draw(self, context):
+    layout = self.layout
+    props = context.scene.cc_toolkit
+    layout.prop(props, "boolean_object", text="")
+
+
 class VIEW3D_PT_cc_toolkit_output(bpy.types.Panel):
   bl_idname = "VIEW3D_PT_cc_toolkit_output"
   bl_label = "Output"
