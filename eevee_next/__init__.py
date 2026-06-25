@@ -1,7 +1,7 @@
 bl_info = {
   "name": "Blender C&C Toolkit (Eevee Next)",
   "author": "Zawaro",
-  "version": (0, 2, 2),
+  "version": (0, 3, 0),
   "blender": (4, 2, 0),
   "location": "View3D > Sidebar > C&C Toolkit",
   "description": "All-in-one toolkit to render C&C assets.",
