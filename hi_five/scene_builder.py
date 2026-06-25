@@ -212,6 +212,7 @@ def rebuild_all(context):
   create_light(context, props)
   create_world(context, props)
   create_planes(context)
+  apply_boolean_modifier(context)
   create_compositor(context, props)
 
   arrange_nodes([tree for tree in bpy.data.node_groups if tree.name.startswith(PREFIX) or ALPHA_CONVERT_NAME in tree.name])
@@ -259,6 +260,28 @@ def rebuild_compositor(context):
     crop.update_resolution(context)
 
   scene.render.use_compositing = saved_compositing
+
+
+def apply_boolean_modifier(context):
+  props = context.scene.cc_toolkit
+  for obj in bpy.data.objects:
+    if obj.name.startswith(f"{PREFIX}Plane."):
+      existing = obj.modifiers.get("Boolean")
+      if props.boolean_object:
+        if existing:
+          existing.object = props.boolean_object
+        else:
+          mod = obj.modifiers.new(name="Boolean", type="BOOLEAN")
+          mod.operation = "DIFFERENCE"
+          mod.solver = "FLOAT"
+          mod.object = props.boolean_object
+      elif existing:
+        obj.modifiers.remove(existing)
+  if props.boolean_object:
+    if "_cnc_original_display_type" not in props.boolean_object:
+      props.boolean_object["_cnc_original_display_type"] = props.boolean_object.display_type
+    props.boolean_object.hide_render = True
+    props.boolean_object.display_type = "WIRE"
 
 
 # ──────────────────────────────────────────────

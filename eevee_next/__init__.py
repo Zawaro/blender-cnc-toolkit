@@ -30,6 +30,7 @@ from .panel import (
   VIEW3D_PT_cc_toolkit_render,
   VIEW3D_PT_cc_toolkit_bg_image,
   VIEW3D_PT_cc_toolkit_materials,
+  VIEW3D_PT_cc_toolkit_boolean,
   VIEW3D_PT_cc_toolkit_output,
   VIEW3D_PT_cc_toolkit_crop_canvas,
 )
@@ -58,6 +59,7 @@ classes = (
   VIEW3D_PT_cc_toolkit_render,
   VIEW3D_PT_cc_toolkit_bg_image,
   VIEW3D_PT_cc_toolkit_materials,
+  VIEW3D_PT_cc_toolkit_boolean,
   VIEW3D_PT_cc_toolkit_output,
   VIEW3D_PT_cc_toolkit_crop_canvas,
   CNC_OT_generate_template,
