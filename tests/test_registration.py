@@ -10,10 +10,10 @@ def addon(addon_name):
 
 
 class TestAddonInstalled:
-  def test_scene_has_cc_toolkit(self, addon):
+  def test_scene_has_cc_toolkit(self):
     assert hasattr(bpy.types.Scene, "cc_toolkit")
 
-  def test_scene_has_cc_crop_canvas(self, addon):
+  def test_scene_has_cc_crop_canvas(self):
     assert hasattr(bpy.types.Scene, "cc_crop_canvas")
 
 

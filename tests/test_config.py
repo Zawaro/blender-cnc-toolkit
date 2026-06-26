@@ -1,11 +1,4 @@
-import importlib
-
 import pytest
-
-
-@pytest.fixture(scope="module")
-def scene_builder(addon_name):
-  return importlib.import_module(f"{addon_name}.scene_builder")
 
 
 class TestEngineMap:

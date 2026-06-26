@@ -1,13 +1,6 @@
-import importlib
 import json
 
 import bpy
-import pytest
-
-
-@pytest.fixture(scope="module")
-def scene_builder(addon_name):
-  return importlib.import_module(f"{addon_name}.scene_builder")
 
 
 class TestSaveRestoreRoundtrip:

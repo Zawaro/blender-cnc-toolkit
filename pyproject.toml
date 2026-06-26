@@ -13,3 +13,4 @@ exclude = ["hi_five", "eevee_next", "cyclesx", "dist.py"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
+pythonpath = ["."]

@@ -4,11 +4,6 @@ import bpy
 import pytest
 
 
-@pytest.fixture(scope="module")
-def scene_builder(addon_name):
-  return importlib.import_module(f"{addon_name}.scene_builder")
-
-
 @pytest.fixture(scope="function")
 def planes_and_sun(scene_with_addon, addon_name):
   """Create test plane objects and a sun for visibility testing."""

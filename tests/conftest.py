@@ -17,6 +17,11 @@ def addon_module(addon_name):
   return importlib.import_module(addon_name)
 
 
+@pytest.fixture(scope="module")
+def scene_builder(addon_name):
+  return importlib.import_module(f"{addon_name}.scene_builder")
+
+
 @pytest.fixture(scope="function")
 def clean_scene():
   """Clear scene objects without resetting addon registrations."""

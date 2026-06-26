@@ -22,7 +22,7 @@ ENGINE_MAP = {"CYCLES": "CYCLES", "EEVEE": "BLENDER_EEVEE"}
 ADDON_DIR = os.path.dirname(os.path.realpath(__file__))
 ASSET_DIR = os.path.join(ADDON_DIR, "assets")
 GENERIC_HDRI = os.path.join(ASSET_DIR, "generic_hdri.exr")
-DESOLATED_HDRI = os.path.join(ASSET_DIR, "desolated_hdri.exr")
+
 
 
 # ──────────────────────────────────────────────
@@ -50,14 +50,8 @@ class GameConfig:
   cycles_filter_width = 0.9
   colorramp_position01 = 0.717273
   colorramp_position02 = 0.722727
-  colorramp_color01 = (0, 0, 1, 0)
-  colorramp_color02 = (0, 0, 0.250158, 1)
   sky_sun_elevation = 0.933751
   sky_sun_rotation = 3.54302
-
-
-def _make_config():
-  return GameConfig()
 
 
 GAME_CONFIGS = {}
@@ -83,13 +77,13 @@ for game_key, overrides in {
     "BASE": {"camera_type": "PERSP", "camera_location": (0, -28.3854, 23.8179), "camera_rotation": (0.872665, 0, 0), "camera_ortho_scale": 39.4299, "camera_iso_location": (0, -37.8463, 31.7564), "camera_iso_rotation": (0.872665, 0, 0), "camera_iso_ortho_scale": 39.4299, "sun_location": (-4.0, 4.0, 16.0), "sun_rotation": (-0.698132, 0, 2.35619), "sun_energy": 6.5, "sky_sun_elevation": 0.884882, "sky_sun_rotation": 3.92874},
   },
 }.items():
-  base = _make_config()
+  base = GameConfig()
   for k, v in overrides.get("BASE", {}).items():
     setattr(base, k, v)
   GAME_CONFIGS[game_key] = {"BASE": base}
   for variant in ("INF", "FX"):
     if variant in overrides:
-      cfg = _make_config()
+      cfg = GameConfig()
       for attr in dir(base):
         if not attr.startswith("_"):
           setattr(cfg, attr, getattr(base, attr))
@@ -200,23 +194,39 @@ def _find_layer_collection(root, name):
   return None
 
 
-def rebuild_all(context):
-  props = context.scene.cc_toolkit
+def _setup_scene(context, props):
   scene = context.scene
   saved_compositing = scene.render.use_compositing
   scene.render.use_compositing = False
-  saved_active_name = context.view_layer.active_layer_collection.name
   target_engine = ENGINE_MAP[props.engine]
   if scene.render.engine != target_engine:
     scene.render.engine = target_engine
-  clear_template(context)
-
   vl = context.view_layer
   if props.remap_materials:
     vl.use_pass_cryptomatte_material = True
     vl.pass_cryptomatte_depth = max(vl.pass_cryptomatte_depth, 2)
   else:
     vl.use_pass_cryptomatte_material = False
+  return saved_compositing
+
+
+def _finish_scene(context, saved_compositing):
+  # hi_five uses compositing_node_group (Blender 5.0), not scene.node_tree
+  arrange_nodes([tree for tree in bpy.data.node_groups if tree.name.startswith(PREFIX) or ALPHA_CONVERT_NAME in tree.name])
+  props = context.scene.cc_toolkit
+  apply_render_settings(context, props)
+  apply_render_type_visibility(context)
+  crop = context.scene.cc_crop_canvas
+  if crop.use_crop_canvas:
+    crop.update_resolution(context)
+  context.scene.render.use_compositing = saved_compositing
+
+
+def rebuild_all(context):
+  props = context.scene.cc_toolkit
+  saved_compositing = _setup_scene(context, props)
+  saved_active_name = context.view_layer.active_layer_collection.name
+  clear_template(context)
 
   create_collections(context)
   create_camera(context, props)
@@ -226,14 +236,7 @@ def rebuild_all(context):
   apply_boolean_modifier(context)
   create_compositor(context, props)
 
-  arrange_nodes([tree for tree in bpy.data.node_groups if tree.name.startswith(PREFIX) or ALPHA_CONVERT_NAME in tree.name])
-
-  apply_render_settings(context, props)
-  apply_render_type_visibility(context)
-
-  crop = context.scene.cc_crop_canvas
-  if crop.use_crop_canvas:
-    crop.update_resolution(context)
+  _finish_scene(context, saved_compositing)
 
   root = context.view_layer.layer_collection
   if saved_active_name.startswith(PREFIX):
@@ -242,24 +245,11 @@ def rebuild_all(context):
     found = _find_layer_collection(root, saved_active_name)
     context.view_layer.active_layer_collection = found or root
 
-  scene.render.use_compositing = saved_compositing
-
 
 def rebuild_compositor(context):
   props = context.scene.cc_toolkit
+  saved_compositing = _setup_scene(context, props)
   scene = context.scene
-  saved_compositing = scene.render.use_compositing
-  scene.render.use_compositing = False
-  target_engine = ENGINE_MAP[props.engine]
-  if scene.render.engine != target_engine:
-    scene.render.engine = target_engine
-
-  vl = context.view_layer
-  if props.remap_materials:
-    vl.use_pass_cryptomatte_material = True
-    vl.pass_cryptomatte_depth = max(vl.pass_cryptomatte_depth, 2)
-  else:
-    vl.use_pass_cryptomatte_material = False
 
   if scene.compositing_node_group and scene.compositing_node_group.name.startswith(PREFIX):
     scene.compositing_node_group = None
@@ -268,16 +258,7 @@ def rebuild_compositor(context):
       bpy.data.node_groups.remove(bpy.data.node_groups[name])
 
   create_compositor(context, props)
-  arrange_nodes([tree for tree in bpy.data.node_groups if tree.name.startswith(PREFIX) or ALPHA_CONVERT_NAME in tree.name])
-
-  apply_render_settings(context, props)
-  apply_render_type_visibility(context)
-
-  crop = context.scene.cc_crop_canvas
-  if crop.use_crop_canvas:
-    crop.update_resolution(context)
-
-  scene.render.use_compositing = saved_compositing
+  _finish_scene(context, saved_compositing)
 
 
 def apply_boolean_modifier(context):
@@ -503,9 +484,14 @@ def _make_plane(name, size=140, location=(0, 0, -0.01), hide_render=True, hide_v
   return obj
 
 
-def _ambient_mat():
-  m = bpy.data.materials.new(name=f"{PREFIX}Plane.ambient")
+def _make_material(name):
+  m = bpy.data.materials.new(name=f"{PREFIX}Plane.{name}")
   m.node_tree.nodes.remove(m.node_tree.nodes["Principled BSDF"])
+  return m
+
+
+def _ambient_mat():
+  m = _make_material("ambient")
   out = m.node_tree.nodes["Material Output"]
   lp = m.node_tree.nodes.new("ShaderNodeLightPath")
   d1 = m.node_tree.nodes.new("ShaderNodeBsdfDiffuse")
@@ -528,8 +514,7 @@ def _ambient_mat():
 
 
 def _blue_mat():
-  m = bpy.data.materials.new(name=f"{PREFIX}Plane.blue")
-  m.node_tree.nodes.remove(m.node_tree.nodes["Principled BSDF"])
+  m = _make_material("blue")
   out = m.node_tree.nodes["Material Output"]
   lp = m.node_tree.nodes.new("ShaderNodeLightPath")
   d1 = m.node_tree.nodes.new("ShaderNodeBsdfDiffuse")
@@ -554,8 +539,7 @@ def _blue_mat():
 
 
 def _grey_mat():
-  m = bpy.data.materials.new(name=f"{PREFIX}Plane.grey")
-  m.node_tree.nodes.remove(m.node_tree.nodes["Principled BSDF"])
+  m = _make_material("grey")
   out = m.node_tree.nodes["Material Output"]
   lp = m.node_tree.nodes.new("ShaderNodeLightPath")
   d1 = m.node_tree.nodes.new("ShaderNodeBsdfDiffuse")
@@ -574,8 +558,7 @@ def _grey_mat():
 
 
 def _holdout_mat():
-  m = bpy.data.materials.new(name=f"{PREFIX}Plane.holdout")
-  m.node_tree.nodes.remove(m.node_tree.nodes["Principled BSDF"])
+  m = _make_material("holdout")
   out = m.node_tree.nodes["Material Output"]
   lp = m.node_tree.nodes.new("ShaderNodeLightPath")
   d1 = m.node_tree.nodes.new("ShaderNodeBsdfDiffuse")
@@ -598,8 +581,7 @@ def _holdout_mat():
 
 
 def _shadow_mat():
-  m = bpy.data.materials.new(name=f"{PREFIX}Plane.shadow")
-  m.node_tree.nodes.remove(m.node_tree.nodes["Principled BSDF"])
+  m = _make_material("shadow")
   out_c = m.node_tree.nodes["Material Output"]
   out_c.target = "CYCLES"
   lp = m.node_tree.nodes.new("ShaderNodeLightPath")
@@ -730,7 +712,7 @@ def create_compositor(context, props):
     _wire_object_or_buildup(context, node_tree, rl, go, links, nodes, props)
 
   elif render_type == "SHADOW":
-    _wire_shadow(node_tree, rl, go, links, nodes, props, config)
+    _wire_shadow(context, node_tree, rl, go, links, nodes, props, config)
 
   scene.compositing_node_group = node_tree
 
@@ -778,6 +760,30 @@ def _alpha_convert_node():
   return bpy.data.node_groups.get(ALPHA_CONVERT_NAME)
 
 
+def _wire_ac_ao(context, nodes, links, source, bg_rgb, go, props, color_mode):
+  ac = _alpha_convert_node()
+  ac_node = nodes.new("CompositorNodeGroup")
+  ac_node.node_tree = ac
+  ac_node.location = (200, 0)
+  ao = nodes.new("CompositorNodeAlphaOver")
+  ao.location = (400, 0)
+  ao.inputs[4].default_value = True
+  links.new(source.outputs[0], ac_node.inputs[0])
+  hue_mix = _create_remap_hue(context, nodes, links, source, go, props) if props.remap_materials else None
+  if hue_mix:
+    links.new(ac_node.outputs[0], hue_mix.inputs['A'])
+    links.new(hue_mix.outputs['Result'], ao.inputs[1])
+  else:
+    links.new(ac_node.outputs[0], ao.inputs[1])
+  links.new(bg_rgb.outputs[0], ao.inputs[0])
+  links.new(ao.outputs[0], go.inputs[0])
+  scene = context.scene
+  scene.render.film_transparent = True
+  scene.render.image_settings.color_mode = color_mode
+  if color_mode == "RGBA":
+    scene.render.image_settings.file_format = "PNG"
+
+
 def _wire_object_or_buildup(context, tree, rl, go, links, nodes, props):
   bg_rgb = nodes.new("CompositorNodeRGB")
   bg_rgb.name = f"{PREFIX}BackgroundRGB"
@@ -792,51 +798,14 @@ def _wire_object_or_buildup(context, tree, rl, go, links, nodes, props):
         links.new(hue_mix.outputs['Result'], go.inputs[0])
       else:
         links.new(rl.outputs[0], go.inputs[0])
-      scene = bpy.context.scene
+      scene = context.scene
       scene.render.film_transparent = True
       scene.render.image_settings.color_mode = "RGBA"
       scene.render.image_settings.file_format = "PNG"
     else:
-      ac = _alpha_convert_node()
-      ac_node = nodes.new("CompositorNodeGroup")
-      ac_node.node_tree = ac
-      ac_node.location = (200, 0)
-      ao = nodes.new("CompositorNodeAlphaOver")
-      ao.location = (400, 0)
-      ao.inputs[4].default_value = True
-      links.new(rl.outputs[0], ac_node.inputs[0])
-      hue_mix = _create_remap_hue(context, nodes, links, rl, go, props) if props.remap_materials else None
-      if hue_mix:
-        links.new(ac_node.outputs[0], hue_mix.inputs['A'])
-        links.new(hue_mix.outputs['Result'], ao.inputs[1])
-      else:
-        links.new(ac_node.outputs[0], ao.inputs[1])
-      links.new(bg_rgb.outputs[0], ao.inputs[0])
-      links.new(ao.outputs[0], go.inputs[0])
-      scene = bpy.context.scene
-      scene.render.film_transparent = True
-      scene.render.image_settings.color_mode = "RGBA"
-      scene.render.image_settings.file_format = "PNG"
+      _wire_ac_ao(context, nodes, links, rl, bg_rgb, go, props, "RGBA")
   else:
-    ac = _alpha_convert_node()
-    ac_node = nodes.new("CompositorNodeGroup")
-    ac_node.node_tree = ac
-    ac_node.location = (200, 0)
-    ao = nodes.new("CompositorNodeAlphaOver")
-    ao.location = (400, 0)
-    ao.inputs[4].default_value = True
-    links.new(rl.outputs[0], ac_node.inputs[0])
-    hue_mix = _create_remap_hue(context, nodes, links, rl, go, props) if props.remap_materials else None
-    if hue_mix:
-      links.new(ac_node.outputs[0], hue_mix.inputs['A'])
-      links.new(hue_mix.outputs['Result'], ao.inputs[1])
-    else:
-      links.new(ac_node.outputs[0], ao.inputs[1])
-    links.new(bg_rgb.outputs[0], ao.inputs[0])
-    links.new(ao.outputs[0], go.inputs[0])
-    scene = bpy.context.scene
-    scene.render.film_transparent = True
-    scene.render.image_settings.color_mode = "RGB"
+    _wire_ac_ao(context, nodes, links, rl, bg_rgb, go, props, "RGB")
 
 
 def _wire_preview(context, tree, rl, go, links, nodes, props, config):
@@ -945,7 +914,7 @@ def _wire_preview(context, tree, rl, go, links, nodes, props, config):
   links.new(bg_input, ao.inputs[0])
   links.new(ao.outputs[0], go.inputs[0])
 
-  scene = bpy.context.scene
+  scene = context.scene
   scene.render.film_transparent = True
   if props.transparent_bg:
     scene.render.image_settings.color_mode = "RGBA"
@@ -954,7 +923,7 @@ def _wire_preview(context, tree, rl, go, links, nodes, props, config):
     scene.render.image_settings.color_mode = "RGB"
 
 
-def _wire_shadow(tree, rl, go, links, nodes, props, config):
+def _wire_shadow(context, tree, rl, go, links, nodes, props, config):
   bg_rgb = nodes.new("CompositorNodeRGB")
   bg_rgb.name = f"{PREFIX}BackgroundRGB"
   if props.transparent_bg:
@@ -1016,7 +985,7 @@ def _wire_shadow(tree, rl, go, links, nodes, props, config):
   links.new(cr.outputs[0], ao.inputs[1])
   links.new(ao.outputs[0], go.inputs[0])
 
-  scene = bpy.context.scene
+  scene = context.scene
   scene.render.film_transparent = True
   scene.render.image_settings.color_mode = "RGBA"
 

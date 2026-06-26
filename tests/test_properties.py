@@ -2,10 +2,7 @@ import importlib
 import re
 from pathlib import Path
 
-try:
-  import tomllib
-except ModuleNotFoundError:
-  import tomli as tomllib
+import tomllib
 
 import pytest
 
