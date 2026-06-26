@@ -37,13 +37,7 @@ def _on_render_init(scene):
 
 
 @bpy.app.handlers.persistent
-def _on_render_complete(scene):
-  global _is_rendering
-  _is_rendering = False
-
-
-@bpy.app.handlers.persistent
-def _on_render_cancel(scene):
+def _on_render_end(scene):
   global _is_rendering
   _is_rendering = False
 
@@ -133,10 +127,10 @@ def register():
 
   if _on_render_init not in bpy.app.handlers.render_init:
     bpy.app.handlers.render_init.append(_on_render_init)
-  if _on_render_complete not in bpy.app.handlers.render_complete:
-    bpy.app.handlers.render_complete.append(_on_render_complete)
-  if _on_render_cancel not in bpy.app.handlers.render_cancel:
-    bpy.app.handlers.render_cancel.append(_on_render_cancel)
+  if _on_render_end not in bpy.app.handlers.render_complete:
+    bpy.app.handlers.render_complete.append(_on_render_end)
+  if _on_render_end not in bpy.app.handlers.render_cancel:
+    bpy.app.handlers.render_cancel.append(_on_render_end)
 
 
 def unregister():
@@ -151,10 +145,10 @@ def unregister():
 
   if _on_render_init in bpy.app.handlers.render_init:
     bpy.app.handlers.render_init.remove(_on_render_init)
-  if _on_render_complete in bpy.app.handlers.render_complete:
-    bpy.app.handlers.render_complete.remove(_on_render_complete)
-  if _on_render_cancel in bpy.app.handlers.render_cancel:
-    bpy.app.handlers.render_cancel.remove(_on_render_cancel)
+  if _on_render_end in bpy.app.handlers.render_complete:
+    bpy.app.handlers.render_complete.remove(_on_render_end)
+  if _on_render_end in bpy.app.handlers.render_cancel:
+    bpy.app.handlers.render_cancel.remove(_on_render_end)
 
 
 if __name__ == "__main__":

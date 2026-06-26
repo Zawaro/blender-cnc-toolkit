@@ -34,12 +34,6 @@ RENDER_TYPE_ITEMS = [
 ]
 
 
-def _rebuild(instance, context):
-  from . import scene_builder
-
-  scene_builder.rebuild_all(context)
-
-
 def _rebuild_if_generated(instance, context):
   if not context.scene.cc_toolkit.template_generated:
     return
@@ -75,22 +69,6 @@ def _apply_boolean_if_generated(self, context):
   props.boolean_object_prev = props.boolean_object.name if props.boolean_object else ""
   from . import scene_builder
   scene_builder.apply_boolean_modifier(context)
-
-
-def _update_visibility(instance, context):
-  if not context.scene.cc_toolkit.template_generated:
-    return
-  from . import scene_builder
-
-  scene_builder.update_render_type_visibility(context)
-
-
-def _update_params(instance, context):
-  if not context.scene.cc_toolkit.template_generated:
-    return
-  from . import scene_builder
-
-  scene_builder.update_scene_params(context)
 
 
 class RemapMaterialItem(bpy.types.PropertyGroup):

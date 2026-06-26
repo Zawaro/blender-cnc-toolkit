@@ -34,12 +34,6 @@ RENDER_TYPE_ITEMS = [
 ]
 
 
-def _rebuild(instance, context):
-  from . import scene_builder
-
-  scene_builder.rebuild_all(context)
-
-
 def _rebuild_if_generated(instance, context):
   if not context.scene.cc_toolkit.template_generated:
     return

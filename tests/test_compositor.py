@@ -1,21 +1,7 @@
-import importlib
-
 import bpy
 import pytest
 
-
-@pytest.fixture(scope="module")
-def scene_builder(addon_name):
-  return importlib.import_module(f"{addon_name}.scene_builder")
-
-
-def _get_compositor_tree(scene):
-  """Get the compositor node tree, handling API differences across Blender versions."""
-  if hasattr(scene, "compositing_node_group") and scene.compositing_node_group:
-    return scene.compositing_node_group
-  if getattr(scene, "use_nodes", False) and getattr(scene, "node_tree", None):
-    return scene.node_tree
-  return None
+from tests.helpers import get_compositor_tree
 
 
 @pytest.fixture(scope="function")
@@ -51,7 +37,7 @@ class TestCreateCompositor:
     compositor_props.render_type = render_type
     scene_builder.create_compositor(compositor_context, compositor_props)
 
-    tree = _get_compositor_tree(compositor_context.scene)
+    tree = get_compositor_tree(compositor_context.scene)
     assert tree is not None
 
   @pytest.mark.parametrize(
@@ -63,7 +49,7 @@ class TestCreateCompositor:
     compositor_props.render_type = render_type
     scene_builder.create_compositor(compositor_context, compositor_props)
 
-    tree = _get_compositor_tree(compositor_context.scene)
+    tree = get_compositor_tree(compositor_context.scene)
     rl_nodes = [n for n in tree.nodes if n.bl_idname == "CompositorNodeRLayers"]
     assert len(rl_nodes) == 1
 
@@ -76,7 +62,7 @@ class TestCreateCompositor:
     compositor_props.render_type = render_type
     scene_builder.create_compositor(compositor_context, compositor_props)
 
-    tree = _get_compositor_tree(compositor_context.scene)
+    tree = get_compositor_tree(compositor_context.scene)
     output_nodes = [
       n
       for n in tree.nodes
@@ -93,7 +79,7 @@ class TestCreateCompositor:
     compositor_props.render_type = render_type
     scene_builder.create_compositor(compositor_context, compositor_props)
 
-    tree = _get_compositor_tree(compositor_context.scene)
+    tree = get_compositor_tree(compositor_context.scene)
     assert len(tree.links) > 0
 
   def test_creates_alpha_convert_group(

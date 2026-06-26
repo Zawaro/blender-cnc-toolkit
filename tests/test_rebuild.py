@@ -3,24 +3,12 @@ import importlib
 import bpy
 import pytest
 
-
-@pytest.fixture(scope="module")
-def scene_builder(addon_name):
-  return importlib.import_module(f"{addon_name}.scene_builder")
+from tests.helpers import get_compositor_tree
 
 
 @pytest.fixture(scope="module")
 def addon(addon_name):
   return importlib.import_module(addon_name)
-
-
-def _get_compositor_tree(scene):
-  """Get the compositor node tree, handling API differences across Blender versions."""
-  if hasattr(scene, "compositing_node_group") and scene.compositing_node_group:
-    return scene.compositing_node_group
-  if getattr(scene, "use_nodes", False) and getattr(scene, "node_tree", None):
-    return scene.node_tree
-  return None
 
 
 @pytest.fixture(scope="function")
@@ -57,7 +45,7 @@ class TestRebuildCompositor:
     rebuild_props.render_type = "DEFAULT"
     scene_builder.rebuild_compositor(rebuild_context)
 
-    tree = _get_compositor_tree(rebuild_context.scene)
+    tree = get_compositor_tree(rebuild_context.scene)
     assert tree is not None
 
   @pytest.mark.parametrize(
@@ -70,7 +58,7 @@ class TestRebuildCompositor:
     rebuild_props.render_type = render_type
     scene_builder.rebuild_compositor(rebuild_context)
 
-    tree = _get_compositor_tree(rebuild_context.scene)
+    tree = get_compositor_tree(rebuild_context.scene)
     assert tree is not None
 
   def test_cleans_up_old_compositor(
@@ -94,7 +82,7 @@ class TestRebuildCompositor:
     assert bpy.data.node_groups.get("_CNC_OLD_Alpha Convert") is None
 
     # New compositor should exist
-    tree = _get_compositor_tree(rebuild_context.scene)
+    tree = get_compositor_tree(rebuild_context.scene)
     assert tree is not None
 
   def test_preserves_camera(self, rebuild_context, rebuild_props, scene_builder):
@@ -257,14 +245,14 @@ class TestRebuildCompositorVsFull:
     rebuild_props.render_type = "DEFAULT"
     scene_builder.rebuild_compositor(rebuild_context)
 
-    tree_before = _get_compositor_tree(rebuild_context.scene)
+    tree_before = get_compositor_tree(rebuild_context.scene)
     assert tree_before is not None
 
     # Rebuild with different render type
     rebuild_props.render_type = "PREVIEW"
     scene_builder.rebuild_compositor(rebuild_context)
 
-    tree_after = _get_compositor_tree(rebuild_context.scene)
+    tree_after = get_compositor_tree(rebuild_context.scene)
     assert tree_after is not None
     # The compositor should be a new tree (different name or restructured)
     assert tree_after is not None

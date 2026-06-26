@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Build distribution packages for hi_five and/or eevee_next addons."""
+"""Build distribution packages for all addon variants."""
 
 import ast
 import os
@@ -19,7 +19,6 @@ TOOLKITS = {
 }
 
 EXCLUDE_DIRS = {".venv", "__pycache__", ".git", "docs"}
-EXCLUDE_FILES = {"zip_hi_five.py", "zip_eevee_next.py"}
 TOOLKIT_EXCLUDE_FILES = {
   "cyclesx": {"blender_manifest.toml"},
 }
@@ -60,7 +59,7 @@ def zip_addon(name, addon_dir, build_number):
   with open(build_file, "w") as f:
     f.write(f'BUILD_NUMBER = "{build_number}"\n')
 
-  exclude = EXCLUDE_FILES | TOOLKIT_EXCLUDE_FILES.get(name, set())
+  exclude = TOOLKIT_EXCLUDE_FILES.get(name, set())
 
   try:
     with zipfile.ZipFile(zip_path, "w", zipfile.ZIP_DEFLATED) as zipf:
