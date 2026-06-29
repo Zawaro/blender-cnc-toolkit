@@ -1,7 +1,7 @@
 bl_info = {
   "name": "Blender C&C Toolkit (HiFive)",
   "author": "Zawaro",
-  "version": (0, 3, 0),
+  "version": (0, 3, 1),
   "blender": (5, 0, 0),
   "location": "View3D > Sidebar > C&C Toolkit",
   "description": "All-in-one toolkit to render C&C assets.",
