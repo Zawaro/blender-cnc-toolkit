@@ -16,9 +16,6 @@
         { "type": "refactor", "section": "Refactoring", "hidden": true }
       ],
       "extra-files": [
-        "hi_five/__init__.py",
-        "eevee_next/__init__.py",
-        "cyclesx/__init__.py",
         "hi_five/blender_manifest.toml",
         "eevee_next/blender_manifest.toml",
         "pyproject.toml"
