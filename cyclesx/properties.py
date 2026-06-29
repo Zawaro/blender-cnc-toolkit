@@ -192,7 +192,7 @@ class CncToolkitProperties(bpy.types.PropertyGroup):
   denoise_composite: bpy.props.BoolProperty(
     name="Composite denoise (CPU)",
     description="Enable OpenImageDenoise in compositor (CPU-only in Blender 3.0)",
-    default=True,
+    default=False,
     update=_rebuild_compositor_if_generated,
   )
 

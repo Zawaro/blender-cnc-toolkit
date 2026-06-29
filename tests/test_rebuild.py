@@ -15,12 +15,7 @@ def addon(addon_name):
 def rebuild_context(scene_with_addon, addon_name):
   """Set up scene with a full template for rebuild tests."""
   scene_with_addon.scene.render.use_compositing = True
-  if addon_name == "cyclesx":
-    scene_with_addon.scene.cycles.use_denoising = True
-    vl = scene_with_addon.view_layer
-    vl.cycles.denoising_store_passes = True
-  else:
-    scene_with_addon.scene.use_nodes = True
+  scene_with_addon.scene.use_nodes = True
   return scene_with_addon
 
 
