@@ -49,7 +49,7 @@ class GameConfig:
   cycles_samples = 64
   cycles_adaptive_min_samples = 32
   cycles_preview_samples = 10
-  cycles_max_bounces = 4
+  cycles_max_bounces = 0
   cycles_filter_width = 0.9
   colorramp_position01 = 0.717273
   colorramp_position02 = 0.722727
@@ -64,7 +64,7 @@ class GameConfig:
   world_sky_air_density = 1
   world_sky_dust_density = 0.05
   world_sky_ozone_density = 0.05
-  world_hs_sky_sat = 0.75
+  world_hs_sky_sat = 0.5
   world_hs_sky_val = 0.9
   world_hs_env_sat = 0.6
   world_use_noise = True
@@ -81,7 +81,7 @@ GAME_CONFIGS = {}
 
 for game_key, overrides in {
   "RA2": {
-    "INF": {"resolution": (320, 240), "camera_ortho_scale": 14.96, "sun_location": (0, 0, 12.27), "sun_rotation": (0, 0, 0)},
+    "INF": {"resolution": (320, 240), "camera_ortho_scale": 14.96, "sun_location": (0, 0, 12.27), "sun_rotation": (0, 0, 0), "world_sky_sun_elevation": 1.5708, "world_sky_sun_rotation": 0, "world_sky_air_density": 2},
   },
   "TS": {
     "BASE": {
@@ -883,14 +883,18 @@ def create_planes(context, props):
   _make_plane(f"{PREFIX}Plane.grey", hide_render=True, hide_viewport=True, material=grey)
   _make_plane(f"{PREFIX}Plane.holdout2", hide_render=True, hide_viewport=True, is_holdout=True, material=holdout)
   obj = _make_plane(f"{PREFIX}Plane.shadow2", hide_render=True, hide_viewport=True, shadow_catcher=use_shadow_catcher, material=shadow)
-  try: obj.active_material.surface_render_method = "BLENDED"
-  except AttributeError: pass
+  try:
+    obj.active_material.surface_render_method = "BLENDED"
+  except AttributeError:
+    pass
 
   shadow_coll = vll.children[COLLECTION_NAME].children[f"{COLLECTION_NAME} Shadow"]
   context.view_layer.active_layer_collection = shadow_coll
   obj = _make_plane(f"{PREFIX}Plane.shadow", hide_render=True, hide_viewport=True, shadow_catcher=use_shadow_catcher, material=shadow)
-  try: obj.active_material.surface_render_method = "BLENDED"
-  except AttributeError: pass
+  try:
+    obj.active_material.surface_render_method = "BLENDED"
+  except AttributeError:
+    pass
 
   holdout_coll = vll.children[COLLECTION_NAME].children[f"{COLLECTION_NAME} Holdout"]
   context.view_layer.active_layer_collection = holdout_coll
@@ -1322,7 +1326,7 @@ def apply_initial_settings(context, props):
     scene.eevee.use_ssr = True
 
   vl = context.view_layer
-  vl.cycles.denoising_store_passes = True
+  vl.cycles.denoising_store_passes = props.denoise_composite or props.denoise_render
   vl.use_pass_cryptomatte_asset = True
   vl.pass_cryptomatte_depth = 2
 

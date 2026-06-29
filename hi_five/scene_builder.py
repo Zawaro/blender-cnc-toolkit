@@ -46,19 +46,20 @@ class GameConfig:
   cycles_samples = 64
   cycles_adaptive_min_samples = 32
   cycles_preview_samples = 10
-  cycles_max_bounces = 4
+  cycles_max_bounces = 0
   cycles_filter_width = 0.9
   colorramp_position01 = 0.717273
   colorramp_position02 = 0.722727
   sky_sun_elevation = 0.933751
   sky_sun_rotation = 3.54302
+  sky_air_density = 1
 
 
 GAME_CONFIGS = {}
 
 for game_key, overrides in {
   "RA2": {
-    "INF": {"resolution": (320, 240), "camera_ortho_scale": 14.96, "sun_location": (0, 0, 12.27), "sun_rotation": (0, 0, 0)},
+    "INF": {"resolution": (320, 240), "camera_ortho_scale": 14.96, "sun_location": (0, 0, 12.27), "sun_rotation": (0, 0, 0), "sky_sun_elevation": 1.5708, "sky_sun_rotation": 0, "sky_air_density": 2},
   },
   "TS": {
     "BASE": {"camera_ortho_scale": 37.4, "sun_location": (-0.800477, -10.1766, 12.27), "sun_rotation": (0.633555, 0.0726057, 6.10865), "sun_energy": 5},
@@ -390,7 +391,7 @@ def create_world(context, props):
 
   hs_sky = tree.nodes.new("ShaderNodeHueSaturation")
   hs_sky.inputs[0].default_value = 0.5
-  hs_sky.inputs[1].default_value = 0.75
+  hs_sky.inputs[1].default_value = 0.5
   hs_sky.inputs[2].default_value = 0.9
   hs_env = tree.nodes.new("ShaderNodeHueSaturation")
   hs_env.inputs[0].default_value = 0.5
@@ -426,7 +427,7 @@ def create_world(context, props):
   sky.sun_elevation = config.sky_sun_elevation
   sky.sun_rotation = config.sky_sun_rotation
   sky.altitude = 20000
-  sky.air_density = 1
+  sky.air_density = config.sky_air_density
   sky.aerosol_density = 0.05
   sky.ozone_density = 0.05
   sky.sky_type = "SINGLE_SCATTERING"
@@ -1018,13 +1019,17 @@ def apply_initial_settings(context, props):
     scene.cycles.sample_clamp_indirect = 0.05
     scene.cycles.transmission_bounces = 8
     scene.cycles.volume_bounces = 1
-    scene.cycles.use_denoising = True
-    scene.cycles.denoising_use_gpu = True
+    scene.cycles.use_denoising = False
+    scene.cycles.denoising_use_gpu = False
   else:
     scene.eevee.use_shadows = True
+    try:
+      scene.eevee.indirect_light_intensity = 0.5
+    except AttributeError:
+      pass
 
   vl = context.view_layer
-  vl.cycles.denoising_store_passes = True
+  vl.cycles.denoising_store_passes = False
   vl.use_pass_cryptomatte_asset = True
   vl.pass_cryptomatte_depth = 2
 
