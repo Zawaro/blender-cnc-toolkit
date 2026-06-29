@@ -58,7 +58,7 @@ def zip_addon(name, addon_dir, build_number):
   with open(init_path, "r") as f:
     init_content = f.read()
   version_tuple = "(" + ", ".join(version.split(".")) + ")"
-  baked = re.sub(r'("version": )_read_version\(\)', rf'\g<1>{version_tuple}', init_content)
+  baked = re.sub(r'("version": )\(.*?\)', rf'\g<1>{version_tuple}', init_content)
   with open(init_path, "w") as f:
     f.write(baked)
 

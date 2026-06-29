@@ -84,9 +84,10 @@ class TestVersionString:
 
 
 class TestManifestVersion:
-  def test_manifest_version_matches_bl_info(self, addon_name, init_module):
+  def test_manifest_version_matches_version_txt(self, addon_name):
     manifest_path = Path(__file__).parent.parent / addon_name / "blender_manifest.toml"
     with open(manifest_path, "rb") as f:
       manifest = tomllib.load(f)
-    bl_info_version = ".".join(str(v) for v in init_module.bl_info["version"])
-    assert manifest["version"] == bl_info_version
+    version_txt = Path(__file__).parent.parent / "version.txt"
+    expected = version_txt.read_text().strip()
+    assert manifest["version"] == expected

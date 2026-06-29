@@ -25,16 +25,6 @@ jobs:
         with:
           python-version: "3.11"
 
-      - name: Sync bl_info version
-        if: ${{ steps.release.outputs.release_created }}
-        run: |
-          VERSION=$(cat version.txt)
-          IFS='.' read -r MAJOR MINOR PATCH <<< "$VERSION"
-          TUPLE="(${MAJOR}, ${MINOR}, ${PATCH})"
-          for f in hi_five/__init__.py eevee_next/__init__.py cyclesx/__init__.py; do
-            sed -i "s/\"version\": (.*),/\"version\": ${TUPLE},/" "$f"
-          done
-
       - name: Build all variants
         if: ${{ steps.release.outputs.release_created }}
         run: python dist.py --all

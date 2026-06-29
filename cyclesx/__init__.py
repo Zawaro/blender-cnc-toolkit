@@ -1,16 +1,9 @@
 import os
 
-def _read_version():
-  version_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "version.txt")
-  if os.path.exists(version_path):
-    with open(version_path) as f:
-      return tuple(int(x) for x in f.read().strip().split("."))
-  return (0, 0, 0)
-
 bl_info = {
   "name": "Blender C&C Toolkit (CyclesX)",
   "author": "Zawaro",
-  "version": _read_version(),
+  "version": (0, 3, 0),
   "blender": (3, 0, 0),
   "location": "View3D > Sidebar > C&C Toolkit",
   "description": "All-in-one toolkit to render C&C assets.",
