@@ -68,13 +68,22 @@ For Object and Buildup render types, enable **Render Shadow with Animation** to 
 Build distribution zips with the included script:
 
 ```bash
-./dist.sh
+./dist.sh              # interactive prompt
+python dist.py --all   # all variants
+python dist.py --variant hi_five  # single variant
 ```
 
-This will:
-1. Create a virtual environment if needed (via [uv](https://docs.astral.sh/uv/))
-2. Prompt you to select a toolkit (hi_five, eevee_next, cyclesx, or all)
-3. Output versioned `.zip` files to `.dist/`
+Output: `.dist/<variant>_<version>_build<N>.zip`
+
+## Releasing
+
+This project uses [release-please](https://github.com/googleapis/release-please) for automated releases. PR titles and commit messages must follow [Conventional Commits](https://www.conventionalcommits.org/):
+
+- `feat: add new feature` → minor version bump
+- `fix: resolve bug` → patch version bump
+- `feat!: breaking change` → major version bump
+
+When a Release PR merges, GitHub Actions builds all variants, creates a GitHub Release with zips attached, and tags with build number (`v0.4.0_build37`).
 
 ## Development
 

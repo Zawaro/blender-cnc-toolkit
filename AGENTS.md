@@ -10,7 +10,7 @@ Three addon variants in separate directories, each a self-contained Blender addo
 
 Each variant shares the same file layout: `__init__.py`, `scene_builder.py`, `operators.py`, `properties.py`, `panel.py`, `crop_canvas.py`, `node_arrange.py`, `assets/`, and `blender_manifest.toml` (hi_five and eevee_next only).
 
-`dist.py` builds versioned `.zip` files to `.dist/`. Build number comes from `git rev-list --count HEAD`.
+`dist.py` builds versioned `.zip` files to `.dist/`. Build number comes from `git rev-list --count HEAD`. Version comes from `version.txt`.
 
 ## Variant differences (the stuff that trips you up)
 
@@ -32,12 +32,13 @@ Each variant shares the same file layout: `__init__.py`, `scene_builder.py`, `op
 ## Build and dist
 
 ```sh
-./dist.sh          # interactive: prompts for which variant(s) to build
-python dist.py     # same, but requires activated venv
+python dist.py                          # interactive: prompts for which variant(s) to build
+python dist.py --all                    # all variants
+python dist.py --variant hi_five        # single variant
 ```
 
 - Output: `.dist/<name>_<version>_build<N>.zip`
-- Build number = total git commits; version from `bl_info` in `__init__.py`
+- Build number = total git commits; version from `version.txt`
 - `_build.py` is generated during build (gitignored) and included in zip for version display
 - `blender_manifest.toml` version must match `bl_info` version in `__init__.py`
 
@@ -77,7 +78,7 @@ Test structure:
 - `tests/test_render.py` — initial settings, render settings, shadow filter save/restore
 - `tests/test_compositor.py` — compositor node tree creation per render type
 
-CI runs on PRs to main via `.github/workflows/test.yml` (lint + 3-variant matrix).
+CI runs on PRs to main via `.github/workflows/test.yml` (lint + 3-variant matrix). PR titles and commit messages must follow [Conventional Commits](https://www.conventionalcommits.org/) (enforced by `commitlint.yml`).
 
 ## Blender extension permissions
 
@@ -92,11 +93,13 @@ HiFive and Eevee Next targets Blender 4.2+ extension system. The manifest requir
 
 ## Versioning
 
-Version lives in two places that must stay in sync:
-- `bl_info["version"]` in `__init__.py` — tuple `(0, 1, 1)`
-- `version` in `blender_manifest.toml` — string `"0.1.1"`
+Version lives in `version.txt` (source of truth). Release-please manages bumping across all files:
+- `version.txt` — `0.3.0`
+- `bl_info["version"]` in `__init__.py` — tuple `(0, 3, 0)`
+- `version` in `blender_manifest.toml` — string `"0.3.0"`
+- `version` in `pyproject.toml` — string `"0.2.2"`
 
-When bumping version, update both files in all affected variants.
+Releases use conventional commits (`feat:`, `fix:`, `feat!:`). Release-please opens a Release PR that bumps versions and generates changelogs.
 
 ## Gotchas
 
