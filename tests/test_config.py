@@ -39,6 +39,14 @@ class TestGameConfigs:
     cfg = scene_builder.GAME_CONFIGS["RA2"]["INF"]
     assert cfg.resolution == (320, 240)
     assert cfg.camera_ortho_scale == 14.96
+    if hasattr(cfg, "world_sky_sun_elevation"):
+      assert cfg.world_sky_sun_elevation == 1.5708
+      assert cfg.world_sky_sun_rotation == 0
+      assert cfg.world_sky_air_density == 2
+    else:
+      assert cfg.sky_sun_elevation == 1.5708
+      assert cfg.sky_sun_rotation == 0
+      assert cfg.sky_air_density == 2
 
   def test_ts_base_override(self, scene_builder):
     cfg = scene_builder.GAME_CONFIGS["TS"]["BASE"]
