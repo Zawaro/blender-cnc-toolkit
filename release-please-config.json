@@ -21,13 +21,7 @@
         "cyclesx/__init__.py",
         "hi_five/blender_manifest.toml",
         "eevee_next/blender_manifest.toml",
-        {
-          "type": "generic",
-          "path": "pyproject.toml",
-          "glob": true,
-          "replace": "(?m/^version\\s*=\\s*\")[^\"]*(\"/)",
-          "singleton": true
-        }
+        "pyproject.toml"
       ]
     }
   },
