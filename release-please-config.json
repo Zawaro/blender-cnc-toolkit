@@ -18,6 +18,7 @@
       "extra-files": [
         "hi_five/blender_manifest.toml",
         "eevee_next/blender_manifest.toml",
+        "cyclesx/blender_manifest.toml",
         "pyproject.toml"
       ]
     }
