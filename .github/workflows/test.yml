@@ -54,6 +54,7 @@ jobs:
         run: |
           mkdir -p _addon
           cp -r ${{ matrix.addon }} _addon/
+          cp version.txt _addon/
 
       - name: Test
         run: |

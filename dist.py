@@ -3,6 +3,7 @@
 
 import argparse
 import os
+import re
 import subprocess
 import sys
 import zipfile
@@ -53,6 +54,14 @@ def zip_addon(name, addon_dir, build_number):
   with open(build_file, "w") as f:
     f.write(f'BUILD_NUMBER = "{build_number}"\n')
 
+  init_path = os.path.join(addon_dir, "__init__.py")
+  with open(init_path, "r") as f:
+    init_content = f.read()
+  version_tuple = "(" + ", ".join(version.split(".")) + ")"
+  baked = re.sub(r'("version": )_read_version\(\)', rf'\g<1>{version_tuple}', init_content)
+  with open(init_path, "w") as f:
+    f.write(baked)
+
   exclude = TOOLKIT_EXCLUDE_FILES.get(name, set())
 
   try:
@@ -72,6 +81,8 @@ def zip_addon(name, addon_dir, build_number):
     print(f"  {zip_path}")
     return zip_path
   finally:
+    with open(init_path, "w") as f:
+      f.write(init_content)
     if os.path.exists(build_file):
       os.remove(build_file)
 
