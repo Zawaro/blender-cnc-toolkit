@@ -1,0 +1,76 @@
+name: Release Please
+on:
+  push:
+    branches: [main]
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  release-please:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: googleapis/release-please-action@v4
+        id: release
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          config-file: release-please-config.json
+          manifest-file: .release-please-manifest.json
+
+      - uses: actions/checkout@v4
+        if: ${{ steps.release.outputs.release_created }}
+
+      - uses: actions/setup-python@v5
+        if: ${{ steps.release.outputs.release_created }}
+        with:
+          python-version: "3.11"
+
+      - name: Build all variants
+        if: ${{ steps.release.outputs.release_created }}
+        run: python dist.py --all
+
+      - name: Upload release assets
+        if: ${{ steps.release.outputs.release_created }}
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ steps.release.outputs.tag_name }}
+          files: .dist/*.zip
+
+      - name: Format release notes
+        if: ${{ steps.release.outputs.release_created }}
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TAG: ${{ steps.release.outputs.tag_name }}
+        run: |
+          VERSION="${TAG#v}"
+          BUILD_NUM=$(git rev-list --count HEAD)
+
+          # Extract changelog body (skip the header line "# Changelog")
+          BODY=$(gh release view "$TAG" --json body -q .body | sed '1,/^$/d')
+
+          # Build download table
+          TABLE="**${TAG} Build ${BUILD_NUM}**"
+          TABLE+="\n\n| Blender | Addon | File |"
+          TABLE+="\n|---------|-------|------|"
+          TABLE+="\n| 5.0+ | \`hi_five\` | [hi_five_${VERSION}_build${BUILD_NUM}.zip](https://github.com/Zawaro/blender-cnc-toolkit/releases/download/${TAG}/hi_five_${VERSION}_build${BUILD_NUM}.zip) |"
+          TABLE+="\n| 4.2-4.x | \`eevee_next\` | [eevee_next_${VERSION}_build${BUILD_NUM}.zip](https://github.com/Zawaro/blender-cnc-toolkit/releases/download/${TAG}/eevee_next_${VERSION}_build${BUILD_NUM}.zip) |"
+          TABLE+="\n| 3.0-3.6 | \`cyclesx\` | [cyclesx_${VERSION}_build${BUILD_NUM}.zip](https://github.com/Zawaro/blender-cnc-toolkit/releases/download/${TAG}/cyclesx_${VERSION}_build${BUILD_NUM}.zip) |"
+          TABLE+="\n\n### Changes\n"
+          TABLE+="\n${BODY}"
+          TABLE+="\n\n### Installation"
+          TABLE+="\n\n1. Download the \`.zip\` for your Blender version"
+          TABLE+="\n2. In Blender: **Edit > Preferences > Add-ons > Install**"
+          TABLE+="\n3. Select the downloaded \`.zip\`"
+          TABLE+="\n4. Enable the addon in the list"
+
+          # Write to temp file (printf handles escape sequences)
+          printf "%b" "$TABLE" > /tmp/release_body.md
+          gh release edit "$TAG" --notes-file /tmp/release_body.md
+
+      - name: Tag with build number
+        if: ${{ steps.release.outputs.release_created }}
+        run: |
+          BUILD_NUM=$(git rev-list --count HEAD)
+          TAG="${{ steps.release.outputs.tag_name }}_build${BUILD_NUM}"
+          git tag -a "$TAG" -m "Build $BUILD_NUM"
+          git push origin "$TAG"

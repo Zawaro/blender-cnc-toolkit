@@ -1,10 +1,8 @@
 #!/usr/bin/env python3
 """Build distribution packages for all addon variants."""
 
-import ast
+import argparse
 import os
-import re
-import shutil
 import subprocess
 import sys
 import zipfile
@@ -38,20 +36,16 @@ def get_build_number():
     return "0"
 
 
-def get_version(addon_dir):
-  init_path = os.path.join(addon_dir, "__init__.py")
-  with open(init_path, "r") as f:
-    content = f.read()
-  match = re.search(r'bl_info\s*=\s*(\{.*?\})', content, re.DOTALL)
-  if not match:
+def get_version():
+  version_path = os.path.join(REPO_ROOT, "version.txt")
+  if not os.path.exists(version_path):
     return "0.0.0"
-  bl_info = ast.literal_eval(match.group(1))
-  version = bl_info.get("version", (0, 0, 0))
-  return ".".join(str(v) for v in version)
+  with open(version_path, "r") as f:
+    return f.read().strip()
 
 
 def zip_addon(name, addon_dir, build_number):
-  version = get_version(addon_dir)
+  version = get_version()
   filename = f"{name}_{version}_build{build_number}.zip"
   zip_path = os.path.join(DIST_DIR, filename)
 
@@ -82,30 +76,43 @@ def zip_addon(name, addon_dir, build_number):
       os.remove(build_file)
 
 
+def parse_args():
+  variants = list(TOOLKITS.keys())
+  parser = argparse.ArgumentParser(description="Build addon distribution zips")
+  group = parser.add_mutually_exclusive_group()
+  group.add_argument("--all", action="store_true", help="Build all variants")
+  group.add_argument("--variant", choices=variants, help="Build a specific variant")
+  return parser.parse_args()
+
+
 def prompt_choice():
+  variants = list(TOOLKITS.keys())
   print("Select toolkit to build:")
-  print("  1) hi_five")
-  print("  2) eevee_next")
-  print("  3) cyclesx")
-  print("  4) all")
+  for i, v in enumerate(variants, 1):
+    print(f"  {i}) {v}")
+  print(f"  {len(variants) + 1}) all")
   print()
   while True:
-    choice = input("Enter choice [1-4]: ").strip()
-    if choice in ("1", "2", "3", "4"):
-      return choice
-    print("Invalid choice. Enter 1, 2, 3, or 4.")
+    choice = input(f"Enter choice [1-{len(variants) + 1}]: ").strip()
+    if choice.isdigit() and 1 <= int(choice) <= len(variants) + 1:
+      return int(choice)
+    print(f"Invalid choice. Enter 1-{len(variants) + 1}.")
 
 
 def main():
-  choice = prompt_choice()
-  if choice == "1":
-    selected = ["hi_five"]
-  elif choice == "2":
-    selected = ["eevee_next"]
-  elif choice == "3":
-    selected = ["cyclesx"]
+  args = parse_args()
+  variants = list(TOOLKITS.keys())
+
+  if args.all:
+    selected = variants[:]
+  elif args.variant:
+    selected = [args.variant]
   else:
-    selected = ["hi_five", "eevee_next", "cyclesx"]
+    choice = prompt_choice()
+    if choice <= len(variants):
+      selected = [variants[choice - 1]]
+    else:
+      selected = variants[:]
 
   os.makedirs(DIST_DIR, exist_ok=True)
   build_number = get_build_number()
