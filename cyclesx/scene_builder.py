@@ -1307,6 +1307,7 @@ def apply_initial_settings(context, props):
     scene.cycles.preview_samples = config.cycles_preview_samples
     scene.cycles.samples = config.cycles_samples
     scene.cycles.adaptive_min_samples = config.cycles_adaptive_min_samples
+    scene.cycles.adaptive_threshold = 0.001
     scene.cycles.sample_clamp_indirect = 0.05
     scene.cycles.transmission_bounces = 8
     scene.cycles.volume_bounces = 1
