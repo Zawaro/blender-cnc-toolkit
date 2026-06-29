@@ -1022,7 +1022,7 @@ def _alpha_convert_node():
   return bpy.data.node_groups.get(ALPHA_CONVERT_NAME)
 
 
-def _wire_ac_ao(context, nodes, links, source, bg_rgb, go, props, color_mode):
+def _wire_ac_ao(context, nodes, links, rl, source, bg_rgb, go, props, color_mode):
   ac = _alpha_convert_node()
   ac_node = nodes.new("CompositorNodeGroup")
   ac_node.node_tree = ac
@@ -1031,7 +1031,7 @@ def _wire_ac_ao(context, nodes, links, source, bg_rgb, go, props, color_mode):
   ao.location = (400, 0)
   ao.use_premultiply = True
   links.new(source.outputs[0], ac_node.inputs[0])
-  hue_mix = _create_remap_hue(context, nodes, links, source, go, props) if props.remap_materials else None
+  hue_mix = _create_remap_hue(context, nodes, links, rl, go, props) if props.remap_materials else None
   if hue_mix:
     links.new(ac_node.outputs[0], hue_mix.inputs[1])
     links.new(hue_mix.outputs[0], ao.inputs[2])
@@ -1065,9 +1065,9 @@ def _wire_object_or_buildup(context, tree, rl, denoise, go, links, nodes, props)
       scene.render.image_settings.color_mode = "RGBA"
       scene.render.image_settings.file_format = "PNG"
     else:
-      _wire_ac_ao(context, nodes, links, denoise, bg_rgb, go, props, "RGBA")
-  else:
-    _wire_ac_ao(context, nodes, links, denoise, bg_rgb, go, props, "RGB")
+      _wire_ac_ao(context, nodes, links, rl, denoise, bg_rgb, go, props, "RGBA")
+    else:
+      _wire_ac_ao(context, nodes, links, rl, denoise, bg_rgb, go, props, "RGB")
 
 
 def _wire_preview(context, tree, rl, denoise, go, links, nodes, props, config):
