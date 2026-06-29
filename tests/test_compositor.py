@@ -8,12 +8,7 @@ from tests.helpers import get_compositor_tree
 def compositor_context(scene_with_addon, addon_name):
   """Ensure compositing is enabled for compositor tests."""
   scene_with_addon.scene.render.use_compositing = True
-  if addon_name == "cyclesx":
-    scene_with_addon.scene.cycles.use_denoising = True
-    vl = scene_with_addon.view_layer
-    vl.cycles.denoising_store_passes = True
-  else:
-    scene_with_addon.scene.use_nodes = True
+  scene_with_addon.scene.use_nodes = True
   return scene_with_addon
 
 
