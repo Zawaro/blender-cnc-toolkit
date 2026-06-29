@@ -1,0 +1,34 @@
+{
+  "$schema": "https://raw.githubusercontent.com/googleapis/release-please/main/schemas/config.json",
+  "packages": {
+    ".": {
+      "release-type": "simple",
+      "bump-minor-pre-major": true,
+      "bump-patch-for-minor-pre-major": true,
+      "include-component-in-tag": false,
+      "changelog-sections": [
+        { "type": "feat", "section": "Features" },
+        { "type": "fix", "section": "Bug Fixes" },
+        { "type": "perf", "section": "Performance" },
+        { "type": "docs", "section": "Documentation", "hidden": true },
+        { "type": "chore", "section": "Misc", "hidden": true },
+        { "type": "refactor", "section": "Refactoring", "hidden": true }
+      ],
+      "extra-files": [
+        "hi_five/__init__.py",
+        "eevee_next/__init__.py",
+        "cyclesx/__init__.py",
+        "hi_five/blender_manifest.toml",
+        "eevee_next/blender_manifest.toml",
+        {
+          "type": "generic",
+          "path": "pyproject.toml",
+          "glob": true,
+          "replace": "(?m/^version\\s*=\\s*\")[^\"]*(\"/)",
+          "singleton": true
+        }
+      ]
+    }
+  },
+  "separate-pull-requests": false
+}
