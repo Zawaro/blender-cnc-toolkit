@@ -1066,8 +1066,8 @@ def _wire_object_or_buildup(context, tree, rl, denoise, go, links, nodes, props)
       scene.render.image_settings.file_format = "PNG"
     else:
       _wire_ac_ao(context, nodes, links, rl, denoise, bg_rgb, go, props, "RGBA")
-    else:
-      _wire_ac_ao(context, nodes, links, rl, denoise, bg_rgb, go, props, "RGB")
+  else:
+    _wire_ac_ao(context, nodes, links, rl, denoise, bg_rgb, go, props, "RGB")
 
 
 def _wire_preview(context, tree, rl, denoise, go, links, nodes, props, config):
