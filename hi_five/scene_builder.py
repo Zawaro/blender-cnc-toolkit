@@ -63,7 +63,7 @@ for game_key, overrides in {
     "INF": {"resolution": (320, 240), "camera_ortho_scale": 14.96, "sun_location": (0, 0, 12.27), "sun_rotation": (0, 0, 0), "sky_sun_elevation": 1.5708, "sky_sun_rotation": 0, "sky_air_density": 2},
   },
   "TS": {
-    "BASE": {"camera_ortho_scale": 37.4, "sun_location": (-0.800477, -10.1766, 12.27), "sun_rotation": (0.633555, 0.0726057, 6.10865), "sun_energy": 7.0, "sky_sun_elevation": 0.942478, "sky_sun_rotation": 3.20966},
+    "BASE": {"camera_ortho_scale": 37.4, "sun_location": (-0.800477, -10.1766, 12.27), "sun_rotation": (0.785398, 0.10471, 6.10865), "sun_energy": 7.0, "sky_sun_elevation": 0.785398, "sky_sun_rotation": 3.20966},
     "INF": {"resolution": (320, 240), "camera_ortho_scale": 18.7},
   },
   "RW": {
