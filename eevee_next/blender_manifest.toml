@@ -1,7 +1,7 @@
 schema_version = "1.0.0"
 
 id = "blender_cnc_toolkit_eevee_next"
-version = "0.3.1"
+version = "0.3.2"
 name = "Blender C&C Toolkit (Eevee Next)"
 tagline = "All-in-one toolkit to render C&C assets."
 maintainer = "Zawaro <zawaroarts@gmail.com>"

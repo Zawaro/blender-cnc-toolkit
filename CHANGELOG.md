@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.3.2](https://github.com/Zawaro/blender-cnc-toolkit/compare/v0.3.1...v0.3.2) (2026-07-01)
+
+
+### Bug Fixes
+
+* add TS/RW sky texture overrides matching templates ([fe1e2c6](https://github.com/Zawaro/blender-cnc-toolkit/commit/fe1e2c65a3601ba5dfcf36b080736de86715e525))
+* update TS sun direction and sky elevation across all variants ([3b00512](https://github.com/Zawaro/blender-cnc-toolkit/commit/3b005122b068befe6f55d2db889de3917aaa65f6))
+
 ## [0.3.1](https://github.com/Zawaro/blender-cnc-toolkit/compare/v0.3.0...v0.3.1) (2026-06-29)
 
 
