@@ -39,7 +39,7 @@ class GameConfig:
   camera_iso_ortho_scale = 53.37
   sun_location = (-4.14, -10, 12.27)
   sun_rotation = (0.633555, 0.0726057, 5.79449)
-  sun_energy = 7.5
+  sun_energy = 7.0
   sun_angle = 0.00392699
   hdri = GENERIC_HDRI
   cycles_samples = 64
@@ -52,6 +52,7 @@ class GameConfig:
   sky_sun_elevation = 0.933751
   sky_sun_rotation = 3.54302
   sky_air_density = 1
+  world_hs_env_val = 0.4
 
 
 GAME_CONFIGS = {}
@@ -61,20 +62,20 @@ for game_key, overrides in {
     "INF": {"resolution": (320, 240), "camera_ortho_scale": 14.96, "sun_location": (0, 0, 12.27), "sun_rotation": (0, 0, 0), "sky_sun_elevation": 1.5708, "sky_sun_rotation": 0, "sky_air_density": 2},
   },
   "TS": {
-    "BASE": {"camera_ortho_scale": 37.4, "sun_location": (-0.800477, -10.1766, 12.27), "sun_rotation": (0.633555, 0.0726057, 6.10865), "sun_energy": 5},
+    "BASE": {"camera_ortho_scale": 37.4, "sun_location": (-0.800477, -10.1766, 12.27), "sun_rotation": (0.633555, 0.0726057, 6.10865), "sun_energy": 7.0, "sky_sun_elevation": 0.942478, "sky_sun_rotation": 3.20966},
     "INF": {"resolution": (320, 240), "camera_ortho_scale": 18.7},
   },
   "RW": {
-    "BASE": {"resolution": (1280, 960), "camera_ortho_scale": 37.4, "sun_location": (-0.800477, -10.1766, 12.27), "sun_rotation": (0.633555, 0.0726057, 6.10865), "sun_energy": 7.5},
+    "BASE": {"resolution": (1280, 960), "camera_ortho_scale": 37.4, "sun_location": (-0.800477, -10.1766, 12.27), "sun_rotation": (0.633555, 0.0726057, 6.10865), "sun_energy": 7.5, "sky_sun_elevation": 0.942478, "sky_sun_rotation": 3.20966},
   },
   "RA1": {
-    "BASE": {"camera_type": "PERSP", "camera_location": (0, -36.2837, 30.4457), "camera_rotation": (0.872665, 0, 0), "camera_ortho_scale": 1.0472, "camera_iso_location": (0, -31.96573, 26.8228), "camera_iso_rotation": (0.872665, 0, 0), "camera_iso_ortho_scale": 53.37, "sun_location": (-4.0, 4.0, 16.0), "sun_rotation": (-0.10472, -0.179769, 0.00762709), "sun_energy": 6.5, "sky_sun_elevation": 1.37881, "sky_sun_rotation": 5.29184},
+    "BASE": {"camera_type": "PERSP", "camera_location": (0, -36.2837, 30.4457), "camera_rotation": (0.872665, 0, 0), "camera_ortho_scale": 1.0472, "camera_iso_location": (0, -31.96573, 26.8228), "camera_iso_rotation": (0.872665, 0, 0), "camera_iso_ortho_scale": 53.37, "sun_location": (-4.0, 4.0, 16.0), "sun_rotation": (-0.10472, -0.179769, 0.00762709), "sun_energy": 7.5, "sky_sun_elevation": 1.37881, "sky_sun_rotation": 5.29184},
   },
   "RM": {
-    "BASE": {"camera_type": "PERSP", "camera_location": (0, -36.2837, 30.4457), "camera_rotation": (0.872665, 0, 0), "camera_ortho_scale": 20.0138, "camera_iso_location": (0, -31.9657, 26.8228), "camera_iso_rotation": (0.872665, 0, 0), "camera_iso_ortho_scale": 20.0138, "sun_location": (-4.0, 4.0, 16.0), "sun_rotation": (-0.10472, -0.179769, 0.00762709), "sun_energy": 6.5, "sky_sun_elevation": 1.37881, "sky_sun_rotation": 5.29184},
+    "BASE": {"camera_type": "PERSP", "camera_location": (0, -36.2837, 30.4457), "camera_rotation": (0.872665, 0, 0), "camera_ortho_scale": 20.0138, "camera_iso_location": (0, -31.9657, 26.8228), "camera_iso_rotation": (0.872665, 0, 0), "camera_iso_ortho_scale": 20.0138, "sun_location": (-4.0, 4.0, 16.0), "sun_rotation": (-0.10472, -0.179769, 0.00762709), "sun_energy": 7.5, "sky_sun_elevation": 1.37881, "sky_sun_rotation": 5.29184},
   },
   "D2K": {
-    "BASE": {"camera_type": "PERSP", "camera_location": (0, -28.3854, 23.8179), "camera_rotation": (0.872665, 0, 0), "camera_ortho_scale": 39.4299, "camera_iso_location": (0, -37.8463, 31.7564), "camera_iso_rotation": (0.872665, 0, 0), "camera_iso_ortho_scale": 39.4299, "sun_location": (-4.0, 4.0, 16.0), "sun_rotation": (-0.698132, 0, 2.35619), "sun_energy": 6.5, "sky_sun_elevation": 0.884882, "sky_sun_rotation": 3.92874},
+    "BASE": {"camera_type": "PERSP", "camera_location": (0, -28.3854, 23.8179), "camera_rotation": (0.872665, 0, 0), "camera_ortho_scale": 39.4299, "camera_iso_location": (0, -37.8463, 31.7564), "camera_iso_rotation": (0.872665, 0, 0), "camera_iso_ortho_scale": 39.4299, "sun_location": (-4.0, 4.0, 16.0), "sun_rotation": (-0.698132, 0, 2.35619), "sun_energy": 7.5, "sky_sun_elevation": 0.884882, "sky_sun_rotation": 3.92874},
   },
 }.items():
   base = GameConfig()
@@ -392,15 +393,6 @@ def create_world(context, props):
   lightpath = tree.nodes.new("ShaderNodeLightPath")
   mapping1 = tree.nodes.new("ShaderNodeMapping")
   mapping1.inputs[1].default_value[2] = 0.3
-  mapping2 = tree.nodes.new("ShaderNodeMapping")
-  mapping2.inputs[2].default_value[2] = -1.5708
-
-  data_image = bpy.data.images.get(os.path.basename(config.hdri))
-  if not data_image:
-    data_image = bpy.data.images.load(config.hdri)
-  tex_env = tree.nodes.new("ShaderNodeTexEnvironment")
-  tex_env.image = data_image
-  tex_env.image.use_fake_user = True
 
   hs_sky = tree.nodes.new("ShaderNodeHueSaturation")
   hs_sky.inputs[0].default_value = 0.5
@@ -409,7 +401,7 @@ def create_world(context, props):
   hs_env = tree.nodes.new("ShaderNodeHueSaturation")
   hs_env.inputs[0].default_value = 0.5
   hs_env.inputs[1].default_value = 0.5
-  hs_env.inputs[2].default_value = 0.6
+  hs_env.inputs[2].default_value = config.world_hs_env_val
 
   bg_cycles = tree.nodes["Background"]
   bg_sky = tree.nodes.new("ShaderNodeBackground")
@@ -422,6 +414,7 @@ def create_world(context, props):
   mix1 = tree.nodes.new("ShaderNodeMixShader")
   mix2 = tree.nodes.new("ShaderNodeMixShader")
   mix3 = tree.nodes.new("ShaderNodeMixShader")
+  mix_eevee_cloud = tree.nodes.new("ShaderNodeMixShader")
   mix_rgb = tree.nodes.new("ShaderNodeMixRGB")
   mix_rgb.inputs[1].default_value = (0, 0, 0, 1)
 
@@ -470,11 +463,11 @@ def create_world(context, props):
   tree.links.new(mix3.outputs[0], out_eevee.inputs[0])
   tree.links.new(lightpath.outputs[0], mix3.inputs[0])
   tree.links.new(bg_blue.outputs[0], mix3.inputs[2])
-  tree.links.new(bg_eevee.outputs[0], mix3.inputs[1])
-  tree.links.new(tex_env.outputs[0], hs_env.inputs[4])
-  tree.links.new(hs_env.outputs[0], bg_eevee.inputs[0])
-  tree.links.new(mapping2.outputs[0], tex_env.inputs[0])
-  tree.links.new(tex_coord.outputs[0], mapping2.inputs[0])
+  tree.links.new(mix_eevee_cloud.outputs[0], mix3.inputs[1])
+  tree.links.new(mix_rgb.outputs[0], mix_eevee_cloud.inputs[0])
+  tree.links.new(sky.outputs[0], hs_env.inputs[4])
+  tree.links.new(hs_env.outputs[0], mix_eevee_cloud.inputs[1])
+  tree.links.new(bg_blue.outputs[0], mix_eevee_cloud.inputs[2])
 
 
 # ──────────────────────────────────────────────
