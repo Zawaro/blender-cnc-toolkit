@@ -87,7 +87,7 @@ for game_key, overrides in {
     "BASE": {
       "camera_ortho_scale": 37.4,
       "sun_location": (-0.800477, -10.1766, 12.27),
-      "sun_rotation": (0.633555, 0.0726057, 6.10865),
+      "sun_rotation": (0.785398, 0.10471, 6.10865),
       "sun_energy": 4,
       "sun_shadow_energy": 1.0,
       "world_color": (0.191202, 0.191202, 0.191202),
