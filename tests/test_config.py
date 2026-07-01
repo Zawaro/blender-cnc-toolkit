@@ -51,7 +51,7 @@ class TestGameConfigs:
   def test_ts_base_override(self, scene_builder):
     cfg = scene_builder.GAME_CONFIGS["TS"]["BASE"]
     assert cfg.camera_ortho_scale == 37.4
-    assert cfg.sun_energy in (4, 5)  # 4=cyclesx, 5=hi_five/eevee_next
+    assert cfg.sun_energy in (4, 5, 7.0)  # 4=cyclesx, 5=old hi_five/eevee_next, 7.0=new
 
   def test_rw_base_override(self, scene_builder):
     cfg = scene_builder.GAME_CONFIGS["RW"]["BASE"]
