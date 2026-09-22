@@ -1,0 +1,23 @@
+schema: spec-driven
+
+context: |
+  Tech stack: Python, Blender 5.0+/4.2+/3.x addon (three variants: hi_five, eevee_next, cyclesx)
+  Domain: C&C game sprite rendering toolkit — template scenes, variants, render types, compositor
+  Build: dist.py -> .dist/*.zip; version single source = version.txt
+  Conventions: conventional commits, 2-space indent, no docstrings (ruff/pylint enforced)
+  Testing: pytest-blender, headless Blender interpreter, one matrix leg per variant
+
+  Domain vocabulary lives in GLOSSARY.md at the repo root and must be used verbatim.
+  Check it before using domain terms and propose updates for any new term surfaced while
+  planning or clarifying (including prompt-only terms). Its Undecided section lists terms
+  that must not be guessed.
+
+rules:
+  proposal:
+    - Name the affected variants (hi_five / eevee_next / cyclesx) explicitly
+    - Always include a "Non-goals" section
+  specs:
+    - Write in user-facing behavior language, not implementation
+    - Use GLOSSARY.md terms verbatim; flag unknown domain terms instead of guessing
+  tasks:
+    - Note variant-specific differences where relevant

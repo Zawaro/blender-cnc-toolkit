@@ -1,5 +1,12 @@
 # Blender C&C Toolkit — Agent Guide
 
+## Glossary
+
+Canonical terms live in [`GLOSSARY.md`](GLOSSARY.md). Read it before writing specs,
+design docs, or naming things. Propose a glossary entry whenever a new domain term
+surfaces during planning or clarifying — including prompt-only terms. Check its
+**Undecided** section before coining names; terms listed there must not be guessed.
+
 ## Project structure
 
 Three addon variants in separate directories, each a self-contained Blender addon:
